@@ -1,19 +1,16 @@
 package server
 
 import (
-	"net/http"
-
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
+	"github.com/temesxgn/se6367-backend/server/handlers"
 )
 
 func setupRoutes(e *echo.Echo) {
 	// e.GET("/", handler.PlaygroundHandler)
 	// e.POST("/query", handler.GraphqlHandler)
 	// e.POST("/stripe-webhooks", handler.StripeWebhookHandler)
-	e.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, "hello")
-	})
+	e.POST("/", handlers.AlexaIntentHandler)
 }
 
 func setupMiddleWare(e *echo.Echo) {

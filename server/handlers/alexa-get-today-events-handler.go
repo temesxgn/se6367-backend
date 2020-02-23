@@ -1,13 +1,11 @@
 package handlers
 
 import (
-	"context"
-
 	"github.com/arienmalec/alexa-go"
 )
 
 // GetMyEventsForTodayIntent -
-func GetMyEventsForTodayIntent(ctx context.Context, request alexa.Request) (alexa.Response, error) {
+func GetMyEventsForTodayIntent(request *alexa.Request) (alexa.Response, error) {
 	// var events []models.Event
 	// user := request.Body.Intent.Slots["user"].Value
 
