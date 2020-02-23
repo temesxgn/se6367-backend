@@ -1,0 +1,23 @@
+{
+  "name": "se6367",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "generate": "go run github.com/99designs/gqlgen -v",
+    "start": "go run server.go",
+    "generate:remove": "rm generated/generated_models.go; rm generated/generated_resolver.go",
+    "generate:stripe": "openapi-to-graphql stripe.json",
+    "build": "docker build -f Dockerfile -t se6367/backend-api .",
+    "preup": "npm run build",
+    "up": "docker-compose up -d && npm run logs",
+    "down": "docker-compose down",
+    "logs": "docker-compose logs -f",
+    "test": "go test ./...",
+    "test:coverage": "go tool cover -html=cover.out",
+    "pretest:coverage": "go test ./... -v -coverprofile cover.out",
+    "lint": "~/go/bin/golint ./..."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {}
+}
