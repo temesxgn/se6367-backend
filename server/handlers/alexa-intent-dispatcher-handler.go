@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/arienmalec/alexa-go"
@@ -24,6 +25,7 @@ func AlexaIntentHandler(c echo.Context) error {
 
 // IntentDispatcher -
 func IntentDispatcher(request *alexa.Request) (alexa.Response, error) {
+	fmt.Println("Request: ", fmt.Sprintf("%v", request))
 	switch request.Body.Intent.Name {
 	case ala.GetMyEventsForTodayIntentType.String():
 		return GetMyEventsForTodayIntent(request)
