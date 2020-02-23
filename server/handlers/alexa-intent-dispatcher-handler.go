@@ -25,7 +25,7 @@ func AlexaIntentHandler(c echo.Context) error {
 
 // IntentDispatcher -
 func IntentDispatcher(request *alexa.Request) (alexa.Response, error) {
-	fmt.Println("Request: ", fmt.Sprintf("%v", request))
+	fmt.Println("Request: ", fmt.Sprintf("%v", request.Body.Intent))
 	switch request.Body.Intent.Name {
 	case ala.GetMyEventsForTodayIntentType.String():
 		return GetMyEventsForTodayIntent(request)
