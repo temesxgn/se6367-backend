@@ -7,6 +7,7 @@ import (
 	"github.com/arienmalec/alexa-go"
 	"github.com/labstack/echo"
 	ala "github.com/temesxgn/se6367-backend/alexa"
+	"github.com/temesxgn/se6367-backend/util/jsonutils"
 )
 
 func AlexaIntentHandler(c echo.Context) error {
@@ -25,7 +26,8 @@ func AlexaIntentHandler(c echo.Context) error {
 
 // IntentDispatcher -
 func IntentDispatcher(request *alexa.Request) (alexa.Response, error) {
-	fmt.Println("Request: ", fmt.Sprintf("%v", request.Body.Intent))
+	js, _ := jsonutils.Marshal(request)
+	fmt.Println("Request /n" + js)
 	switch request.Body.Intent.Name {
 	case ala.GetMyEventsForTodayIntentType.String():
 		return GetMyEventsForTodayIntent(request)
