@@ -56,3 +56,23 @@ func GetApplicationMode() AppMode {
 func GetServerPort() string {
 	return GetValue(ServerPort, DefaultPort)
 }
+
+func GetAuth0Domain() string {
+	return GetValue(Auth0DomainKey, "")
+}
+
+func GetAuth0ClientID() string {
+	return GetValue(Auth0ClientIDKey, "")
+}
+
+func GetAuth0ClientSecret() string {
+	return GetValue(Auth0ClientSecretKey, "")
+}
+
+func GetAuth0SigningKey() string {
+	return GetValue(Auth0SigningKey, "")
+}
+
+func GetAuth0APIID() string {
+	return GetValue(Auth0APIID, "")
+}

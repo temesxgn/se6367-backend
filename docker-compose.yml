@@ -4,8 +4,8 @@ services:
   se6367-backend-api:
     image: "se6367/backend-api:latest"
     container_name: "se6367-backend-api"
-    # env_file:
-    #   - "./_local.env"
+    env_file:
+      - "./local.env"
     ports:
       - "8081:8081"
     volumes:

@@ -1,48 +1,69 @@
 package auth
 
-// // HasAdminSecret - Check if context has admin secret
-// func HasAdminSecret(ctx context.Context) bool {
-// 	if secret := ctx.Value(AdminSecretCtxKey); secret != nil && secret == config.GetHasuraSecret() {
-// 		return true
-// 	}
+import (
+	"fmt"
+	jwtmiddleware "github.com/auth0/go-jwt-middleware"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo"
+	"github.com/temesxgn/se6367-backend/config"
+	"gopkg.in/auth0.v3"
+)
 
-// 	return false
-// }
+func JwtMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	jwtMiddleware := jwtmiddleware.New(jwtmiddleware.Options{
+		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
+			return []byte(config.GetAuth0SigningKey()), nil
+		},
+		// When set, the middleware verifies that tokens are signed with the specific signing algorithm
+		// If the signing method is not constant the ValidationKeyGetter callback can be used to implement additional checks
+		// Important to avoid security issues described here: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
+		SigningMethod: jwt.SigningMethodHS256,
+	})
 
-// // HasAuthorization - Check if context has api key & secret
-// func HasAuthorization(ctx context.Context) bool {
-// 	if key := ctx.Value(APIKey); key != nil && key == config.GetAPIKey() {
-// 		if secret := ctx.Value(APISecret); secret != nil && secret == config.GetAPISecret() {
-// 			return true
-// 		}
-// 	}
+	return func(c echo.Context) error {
+		return jwtMiddleware.CheckJWT(c.Response().Writer, c.Request())
+	}
+}
 
-// 	return false
-// }
+func Tokenify(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		service := NewService()
+		token, err := service.GetToken()
+		if err != nil {
+			return err
+		}
 
-// // GetUserFromToken - convert JWT token to user object
-// func GetUserFromToken(token string) *User {
-// 	if split := strings.Split(token, " "); len(split) == 2 {
-// 		token := split[1]
-// 		tkn, _ := jwt.ParseSigned(token)
+		c.Set("token", token)
+		return nil
+	}
+}
 
-// 		usr := &User{}
-// 		if err := tkn.UnsafeClaimsWithoutVerification(usr); err == nil {
-// 			return usr
-// 		}
-// 	}
+func LoadUser(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		c.Request()
+		service := NewService()
+		fmt.Println("-------------------- USER OBJECT: --------------------")
+		fmt.Println(fmt.Sprintf("%v", c.Get("user")))
+		fmt.Println("-------------------- USER OBJECT: --------------------")
+		usr := c.Get("user").(string)
+		user, _ := service.GetUser(usr)
+		//usr.email = user.Email
 
-// 	return &User{}
-// }
+		var passwordless bool
+		for _, id := range user.Identities {
+			if auth0.StringValue(id.Provider) == "email" {
+				passwordless = true
+				break
+			}
+		}
 
-// // Middleware - Auth middleware integration
-// func Middleware(next echo.HandlerFunc) echo.HandlerFunc {
-// 	return func(c echo.Context) error {
-// 		ctx := SetValuesFromHeaders(c.Request())
-// 		if HasAdminSecret(ctx) || HasAuthorization(ctx) {
-// 			return next(c)
-// 		}
+		if !passwordless {
+			fmt.Println("Provisioning email passwordless user for " + fmt.Sprintf("%v", usr))
+			_ = service.CreateUser("email", "temesxgn@gmail.com")
 
-// 		return echo.NewHTTPError(http.StatusUnauthorized, "Access Denied")
-// 	}
-// }
+		}
+
+		return nil
+	}
+
+}
