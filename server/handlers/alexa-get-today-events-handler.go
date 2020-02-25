@@ -26,17 +26,21 @@ func GetMyEventsForTodayIntent(user *auth.User) (alexa.Response, error) {
 	// return alexa.NewSSMLResponse("Frontpage Deals", builder.Build())
 	// return alexa.Response{}, nil
 
+	var builder ala.SSMLBuilder
 	service := hasura.NewService(config.GetHasuraEndpoint())
 	events, _ := service.GetEvents(context.Background(), nil)
-
-	var builder ala.SSMLBuilder
-	builder.Say("Here are your events for today")
-	builder.Pause("500")
-	for _, event := range events {
-		builder.Say(fmt.Sprintf("%s", event.Title))
-		builder.Pause("1000")
+	if len(events) == 0 {
+		builder.Say("You have no events for today.")
+		builder.Pause("300")
+		builder.Say("Say Alexa, events manager create event to get started creating an event")
+	} else {
+		builder.Say("Here are your events for today")
+		builder.Pause("500")
+		for _, event := range events {
+			builder.Say(fmt.Sprintf("%s", event.Title))
+			builder.Pause("1000")
+		}
 	}
 
 	return ala.NewSSMLResponse("My Events Today", builder.Build()), nil
-
 }
