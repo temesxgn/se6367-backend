@@ -32,7 +32,7 @@ func GetMyEventsForTodayIntent(user *auth.User) (alexa.Response, error) {
 	if len(events) == 0 {
 		builder.Say("You have no events for today.")
 		builder.Pause("300")
-		builder.Say("Say Alexa, events manager create event to get started creating an event")
+		builder.Say("To create an event, say Alexa, events manager create event")
 	} else {
 		builder.Say("Here are your events for today")
 		builder.Pause("500")
