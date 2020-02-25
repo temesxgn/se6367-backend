@@ -8,7 +8,7 @@ import (
 
 // Service - Hasura Service interface
 type Service interface {
-	GetEvents(ctx context.Context, filters models.EventFilterParams) ([]*models.Event, error)
+	GetEvents(ctx context.Context, filters *models.EventFilterParams) ([]*models.Event, error)
 	GetEvent(ctx context.Context, id string) (*models.Event, error)
 }
 

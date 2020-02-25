@@ -3,7 +3,7 @@ package models
 import "time"
 
 // Event - event model object
-type TriggerEvent struct {
+type Event struct {
 	ID          string    `json:"id"`
 	AccountID   string    `json:"account_id"`
 	Title       string    `json:"title"`

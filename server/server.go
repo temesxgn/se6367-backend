@@ -3,13 +3,12 @@ package server
 import (
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	"github.com/temesxgn/se6367-backend/auth"
 	"github.com/temesxgn/se6367-backend/server/handlers"
 )
 
 func setupRoutes(e *echo.Echo) {
-	e.POST("/alexa", handlers.AlexaIntentHandler, auth.JwtMiddleware, auth.Tokenify)
-	e.POST("/insert", handlers.InsertEventHandler)
+	e.POST("/alexa", handlers.AlexaIntentHandler)
+	//e.POST("/insert", handlers.InsertEventHandler)
 }
 
 func setupMiddleWare(e *echo.Echo) {

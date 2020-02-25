@@ -1,12 +1,17 @@
 package handlers
 
 import (
+	"context"
+	"fmt"
 	"github.com/arienmalec/alexa-go"
 	ala "github.com/temesxgn/se6367-backend/alexa"
+	"github.com/temesxgn/se6367-backend/auth"
+	"github.com/temesxgn/se6367-backend/config"
+	"github.com/temesxgn/se6367-backend/hasura"
 )
 
 // GetMyEventsForTodayIntent -
-func GetMyEventsForTodayIntent(request *alexa.Request) (alexa.Response, error) {
+func GetMyEventsForTodayIntent(user *auth.User) (alexa.Response, error) {
 	// var events []models.Event
 	// user := request.Body.Intent.Slots["user"].Value
 
@@ -20,13 +25,17 @@ func GetMyEventsForTodayIntent(request *alexa.Request) (alexa.Response, error) {
 	// }
 	// return alexa.NewSSMLResponse("Frontpage Deals", builder.Build())
 	// return alexa.Response{}, nil
+
+	service := hasura.NewService(config.GetHasuraEndpoint())
+	events, _ := service.GetEvents(context.Background(), nil)
+
 	var builder ala.SSMLBuilder
 	builder.Say("Here are your events for today")
 	builder.Pause("500")
-	builder.Say("Doctor's appointment at Nine AM until four PM")
-
-	builder.Pause("1000")
-	builder.Say("Gym at eleven thirty AM until one pm")
+	for _, event := range events {
+		builder.Say(fmt.Sprintf("%s", event.Title))
+		builder.Pause("1000")
+	}
 
 	return ala.NewSSMLResponse("My Events Today", builder.Build()), nil
 

@@ -64,5 +64,7 @@ func (builder *SSMLBuilder) Build() string {
 			response += "<break time='" + ssml.pause + "ms'/> "
 		}
 	}
+
+	builder.SSML = make([]SSML, 0)
 	return "<speak>" + response + "</speak>"
 }

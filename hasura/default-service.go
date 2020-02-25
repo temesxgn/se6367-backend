@@ -36,28 +36,17 @@ type hasuraService struct {
 	client *graphql.Client
 }
 
-func (h *hasuraService) GetEvents(ctx context.Context, filter models.EventFilterParams) ([]*models.Event, error) {
+func (h *hasuraService) GetEvents(ctx context.Context, filter *models.EventFilterParams) ([]*models.Event, error) {
 	var respData models.GetEventsResponse
 	req := graphql.NewRequest(`
-		query GetOrders($limit: Int = 10, $user: String, $customer: String, $status: order_status_enum) {
-			orders(limit: $limit, where: { user_id: { _eq: $user }, stripe_customer_id: { _eq: $customer }, status: { _eq: $status }}) {
-				id
-				payment_intent_id
-				payment_intent_amount
-				refund_percent
-				status
-				created_at
-				order_items {
-					amount
-					product_id
-					quantity
-				}
-			}
+		query MyQuery {
+		  event(where: {account_id: {_eq: "auth0|5dd98f908537f90eefda947d"}}, limit: 3) {
+			id
+			title
+			description
+		  }
 		}
 	`)
-
-	req.Var("limit", filter.Limit)
-	req.Var("user", filter.UserID)
 
 	err := h.client.Run(ctx, req, &respData)
 	if err != nil {
