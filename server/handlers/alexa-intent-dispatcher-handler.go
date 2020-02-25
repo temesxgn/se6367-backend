@@ -90,13 +90,14 @@ func AlexaIntentHandler(c echo.Context) error {
 		//}
 
 		res, err = GetMyEventsForTodayIntent(usr)
+
 	default:
 		res, err = HandleHelpIntent(u)
 	}
 
 	//res, err := IntentDispatcher(u)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, err.Error())
+		return c.JSON(http.StatusOK, "Error processing your request, please try again")
 	}
 
 	return c.JSON(http.StatusOK, res)
