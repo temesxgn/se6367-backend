@@ -2,6 +2,9 @@ package hasura
 
 import (
 	"context"
+	"fmt"
+	"github.com/temesxgn/se6367-backend/util/jsonutils"
+	"gopkg.in/auth0.v3"
 	"sync"
 
 	"github.com/temesxgn/se6367-backend/auth"
@@ -39,8 +42,8 @@ type hasuraService struct {
 func (h *hasuraService) GetEvents(ctx context.Context, filter *models.EventFilterParams) ([]*models.Event, error) {
 	var respData models.GetEventsResponse
 	req := graphql.NewRequest(`
-		query MyQuery {
-		  event(where: {account_id: {_eq: "auth0|5dd98f908537f90eefda947d"}}, limit: 3) {
+		query MyQuery($id: String!) {
+		  event(where: {account_id: {_eq: $id}}, limit: 3) {
 			id
 			title
 			description
@@ -48,11 +51,16 @@ func (h *hasuraService) GetEvents(ctx context.Context, filter *models.EventFilte
 		}
 	`)
 
+	fmt.Println("SEACHING USER " + auth0.StringValue(filter.UserID))
+	req.Var("id", filter.UserID)
 	err := h.client.Run(ctx, req, &respData)
 	if err != nil {
+		fmt.Println("ERROR " + err.Error())
 		return nil, err
 	}
 
+	dt, _ := jsonutils.Marshal(respData)
+	fmt.Println(fmt.Sprintf("RES: %v", dt))
 	return respData.Data, nil
 }
 
@@ -60,19 +68,11 @@ func (h *hasuraService) GetEvents(ctx context.Context, filter *models.EventFilte
 func (h *hasuraService) GetEvent(ctx context.Context, id string) (*models.Event, error) {
 	var respData models.GetEventResponse
 	req := graphql.NewRequest(`
-		query GetOrder($id: String!) {
-			orders_by_pk(id: $id) {
-				id
-				payment_intent_amount
-				refund_percent
-				status
-				created_at
-				order_items {
-					amount
-					product_id
-					quantity
-				}
-			}
+		query MyQuery($id: String!) {
+		  event_by_pk(id: $id) {
+			title
+			
+		  }
 		}
 	`)
 

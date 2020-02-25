@@ -8,6 +8,8 @@ import (
 	"github.com/temesxgn/se6367-backend/auth"
 	"github.com/temesxgn/se6367-backend/config"
 	"github.com/temesxgn/se6367-backend/hasura"
+	"github.com/temesxgn/se6367-backend/hasura/models"
+	"gopkg.in/auth0.v3"
 )
 
 // GetMyEventsForTodayIntent -
@@ -28,7 +30,9 @@ func GetMyEventsForTodayIntent(user *auth.User) (alexa.Response, error) {
 
 	var builder ala.SSMLBuilder
 	service := hasura.NewService(config.GetHasuraEndpoint())
-	events, _ := service.GetEvents(context.Background(), nil)
+	events, _ := service.GetEvents(context.Background(), &models.EventFilterParams{
+		UserID: auth0.String(user.Sub),
+	})
 	if len(events) == 0 {
 		builder.Say("You have no events for today.")
 		builder.Pause("300")

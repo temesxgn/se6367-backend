@@ -7,6 +7,7 @@ import (
 	"github.com/square/go-jose/jwt"
 	ala "github.com/temesxgn/se6367-backend/alexa"
 	"github.com/temesxgn/se6367-backend/auth"
+	"github.com/temesxgn/se6367-backend/util/jsonutils"
 	"net/http"
 	"strings"
 )
@@ -52,7 +53,9 @@ func AlexaIntentHandler(c echo.Context) error {
 		//	return []byte("WEW0t4UqoC1-vaeSCrcyyPOUdRXdH792r-Xl7F2aZuQG1zu9nFv8vdtPVfsGmN95"), nil
 		//})
 
-		usr := GetUserFromToken(u.Session.User.AccessToken)
+		usr := GetUserFromToken(c.Request().Header.Get("Authorization"))
+		dt, _ := jsonutils.Marshal(usr)
+		fmt.Println(fmt.Sprintf("USER %v", dt))
 
 		//c.Set("user", tkn)
 
