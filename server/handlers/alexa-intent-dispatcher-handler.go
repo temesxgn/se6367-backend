@@ -100,7 +100,7 @@ func AlexaIntentHandler(c echo.Context) error {
 		return c.JSON(http.StatusOK, "Error processing your request, please try again")
 	}
 
-	return c.JSON(http.StatusOK, res)
+	return c.JSON(http.StatusOK, "hello")
 }
 
 //
