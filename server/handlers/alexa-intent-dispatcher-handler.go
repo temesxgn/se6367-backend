@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"github.com/arienmalec/alexa-go"
 	"github.com/labstack/echo"
@@ -53,7 +54,11 @@ func AlexaIntentHandler(c echo.Context) error {
 		//	return []byte("WEW0t4UqoC1-vaeSCrcyyPOUdRXdH792r-Xl7F2aZuQG1zu9nFv8vdtPVfsGmN95"), nil
 		//})
 
-		usr := GetUserFromToken(c.Request().Header.Get("Authorization"))
+		usr, err := GetUserFromToken(c.Request().Header.Get("Authorization"))
+		if err != nil {
+			builder.Say(err.Error())
+			c.JSON(http.StatusInternalServerError, builder.Build())
+		}
 		dt, _ := jsonutils.Marshal(usr)
 		fmt.Println(fmt.Sprintf("USER %v", dt))
 
@@ -108,16 +113,19 @@ func AlexaIntentHandler(c echo.Context) error {
 //	}
 //}
 
-func GetUserFromToken(token string) *auth.User {
+func GetUserFromToken(token string) (*auth.User, error) {
 	if split := strings.Split(token, " "); len(split) == 2 {
 		token := split[1]
-		tkn, _ := jwt.ParseSigned(token)
+		tkn, err := jwt.ParseSigned(token)
+		if err != nil {
+			return nil, err
+		}
 
 		usr := &auth.User{}
 		if err := tkn.UnsafeClaimsWithoutVerification(usr); err == nil {
-			return usr
+			return usr, nil
 		}
 	}
 
-	return &auth.User{}
+	return nil, errors.New("malformed authentication request")
 }
