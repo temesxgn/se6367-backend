@@ -20,7 +20,7 @@ func AlexaIntentHandler(c echo.Context) error {
 		builder.Say("Sorry error processing your request.")
 		builder.Pause("100")
 		builder.Say("Please try again")
-		return c.JSON(http.StatusBadRequest, builder.Build())
+		return c.JSON(http.StatusOK, builder.Build())
 	}
 
 	var res alexa.Response
@@ -57,7 +57,7 @@ func AlexaIntentHandler(c echo.Context) error {
 		usr, err := GetUserFromToken(c.Request().Header.Get("Authorization"))
 		if err != nil {
 			builder.Say(err.Error())
-			c.JSON(http.StatusInternalServerError, builder.Build())
+			c.JSON(http.StatusOK, builder.Build())
 		}
 		dt, _ := jsonutils.Marshal(usr)
 		fmt.Println(fmt.Sprintf("USER %v", dt))
@@ -68,7 +68,7 @@ func AlexaIntentHandler(c echo.Context) error {
 		token, err := service.GetToken()
 		if err != nil {
 			builder.Say(err.Error())
-			c.JSON(http.StatusInternalServerError, builder.Build())
+			c.JSON(http.StatusOK, builder.Build())
 		}
 
 		c.Set("token", token)
