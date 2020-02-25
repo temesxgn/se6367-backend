@@ -57,7 +57,8 @@ func AlexaIntentHandler(c echo.Context) error {
 		usr, err := GetUserFromToken(c.Request().Header.Get("Authorization"))
 		if err != nil {
 			builder.Say("Error authenticating, please try again")
-			c.JSON(http.StatusOK, builder.Build())
+
+			c.JSON(http.StatusOK, ala.NewSSMLResponse("My Events Today", builder.Build()))
 		}
 		dt, _ := jsonutils.Marshal(usr)
 		fmt.Println(fmt.Sprintf("USER %v", dt))
@@ -68,7 +69,7 @@ func AlexaIntentHandler(c echo.Context) error {
 		token, err := service.GetToken()
 		if err != nil {
 			builder.Say("Error authenticating, please try again")
-			c.JSON(http.StatusOK, builder.Build())
+			c.JSON(http.StatusOK, ala.NewSSMLResponse("My Events Today", builder.Build()))
 		}
 
 		c.Set("token", token)
@@ -97,10 +98,10 @@ func AlexaIntentHandler(c echo.Context) error {
 
 	//res, err := IntentDispatcher(u)
 	if err != nil {
-		return c.JSON(http.StatusOK, "Error processing your request, please try again")
+		return c.JSON(http.StatusOK, ala.NewSSMLResponse("My Events Today", err.Error()))
 	}
 
-	return c.JSON(http.StatusOK, "hello")
+	return c.JSON(http.StatusOK, res)
 }
 
 //
