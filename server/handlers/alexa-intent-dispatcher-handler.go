@@ -56,7 +56,7 @@ func AlexaIntentHandler(c echo.Context) error {
 
 		usr, err := GetUserFromToken(c.Request().Header.Get("Authorization"))
 		if err != nil {
-			builder.Say(err.Error())
+			builder.Say("Error authenticating, please try again")
 			c.JSON(http.StatusOK, builder.Build())
 		}
 		dt, _ := jsonutils.Marshal(usr)
@@ -67,7 +67,7 @@ func AlexaIntentHandler(c echo.Context) error {
 		service := auth.NewService()
 		token, err := service.GetToken()
 		if err != nil {
-			builder.Say(err.Error())
+			builder.Say("Error authenticating, please try again")
 			c.JSON(http.StatusOK, builder.Build())
 		}
 
