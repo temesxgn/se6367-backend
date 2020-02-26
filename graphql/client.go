@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/temesxgn/se6367-backend/util/jsonutils"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -29,10 +30,10 @@ type Client struct {
 }
 
 // NewClient makes a new Client capable of making GraphQL requests.
-func NewClient(endpoint string, opts ...ClientOption) *Client {
+func NewClient(endpoint string, logger func(s string), opts ...ClientOption) *Client {
 	c := &Client{
 		endpoint:       endpoint,
-		Log:            func(string) {},
+		Log:            logger,
 		defaultHeaders: make(map[string]string),
 	}
 	for _, optionFunc := range opts {
@@ -118,12 +119,14 @@ func (c *Client) runWithJSON(ctx context.Context, req *Request, resp interface{}
 		return errors.Wrap(err, "reading body")
 	}
 	c.logf("<< %s", buf.String())
+	_ = jsonutils.Unmarshal(buf.String(), &gr.Data)
 	if err := json.NewDecoder(&buf).Decode(&gr); err != nil {
 		if res.StatusCode != http.StatusOK {
 			return fmt.Errorf("graphql: server returned a non-200 status code: %v", res.StatusCode)
 		}
 		return errors.Wrap(err, "decoding response")
 	}
+
 	if len(gr.Errors) > 0 {
 		// return first error
 		return gr.Errors[0]
@@ -239,8 +242,8 @@ func (e graphErr) Error() string {
 }
 
 type graphResponse struct {
-	Data   interface{}
-	Errors []graphErr
+	Data   interface{} `json:"data"`
+	Errors []graphErr  `json:"errors"`
 }
 
 // Request is a GraphQL request.

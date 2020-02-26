@@ -5,7 +5,6 @@ import "time"
 // Event - event model object
 type Event struct {
 	ID          string    `json:"id"`
-	AccountID   string    `json:"account_id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	CreatedAt   time.Time `json:"created_at"`
@@ -21,10 +20,14 @@ type EventFilterParams struct {
 
 // GetEventsResponse - list of event response model
 type GetEventsResponse struct {
-	Data []*Event `json:"event"`
+	Data EventsResponseData `json:"data"`
+}
+
+type EventsResponseData struct {
+	Events []*Event `json:"events"`
 }
 
 // GetEventResponse - event response model
 type GetEventResponse struct {
-	Data *Event `json:"event_by_pk"`
+	Data Event `json:"event_by_pk"`
 }

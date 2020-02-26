@@ -8,11 +8,11 @@ import (
 	"github.com/square/go-jose/jwt"
 	ala "github.com/temesxgn/se6367-backend/alexa"
 	"github.com/temesxgn/se6367-backend/auth"
-	"github.com/temesxgn/se6367-backend/util/jsonutils"
 	"net/http"
 	"strings"
 )
 
+// TODO optimize/refactor code
 func AlexaIntentHandler(c echo.Context) error {
 	var builder ala.SSMLBuilder
 	u := new(alexa.Request)
@@ -28,53 +28,36 @@ func AlexaIntentHandler(c echo.Context) error {
 	switch u.Body.Intent.Name {
 	case ala.GetMyEventsForTodayIntentType.String():
 		c.Request().Header.Set("Authorization", fmt.Sprintf("Bearer %s", u.Session.User.AccessToken))
-
-		//jwtMiddleware := jwtmiddleware.New(jwtmiddleware.Options{
-		//	ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-		//		return []byte("WEW0t4UqoC1-vaeSCrcyyPOUdRXdH792r-Xl7F2aZuQG1zu9nFv8vdtPVfsGmN95"), nil
-		//	},
-		//	// When set, the middleware verifies that tokens are signed with the specific signing algorithm
-		//	// If the signing method is not constant the ValidationKeyGetter callback can be used to implement additional checks
-		//	// Important to avoid security issues described here: https://auth0.com/blog/2015/03/31/critical-vulnerabilities-in-json-web-token-libraries/
-		//	SigningMethod: jwt.SigningMethodRS256,
-		//})
-		//
-		//if err := jwtMiddleware.CheckJWT(c.Response().Writer, c.Request()); err != nil {
-		//	builder.Say("Failed authenticating your account")
-		//	return c.JSON(http.StatusBadRequest, builder.Build())
-		//}
-
-		//tkn, err := jwt.Parse(u.Session.User.AccessToken, func(token *jwt.Token) (interface{}, error) {
-		//	// Don't forget to validate the alg is what you expect:
-		//	if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
-		//		return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
-		//	}
-		//
-		//	// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-		//	return []byte("WEW0t4UqoC1-vaeSCrcyyPOUdRXdH792r-Xl7F2aZuQG1zu9nFv8vdtPVfsGmN95"), nil
-		//})
-
 		usr, err := GetUserFromToken(c.Request().Header.Get("Authorization"))
 		if err != nil {
 			builder.Say("Error authenticating, please try again")
-
 			c.JSON(http.StatusOK, ala.NewSSMLResponse("My Events Today", builder.Build()))
+			return nil
 		}
-		dt, _ := jsonutils.Marshal(usr)
-		fmt.Println(fmt.Sprintf("USER %v", dt))
 
-		//c.Set("user", tkn)
+		if !usr.IsValid() {
+			builder.Say("Error authenticating, please login again")
+			c.JSON(http.StatusOK, ala.NewSSMLResponse("My Events Today", builder.Build()))
+			return nil
+		}
 
 		service := auth.NewService()
 		token, err := service.GetToken()
 		if err != nil {
 			builder.Say("Error authenticating, please try again")
 			c.JSON(http.StatusOK, ala.NewSSMLResponse("My Events Today", builder.Build()))
+			return nil
 		}
 
 		c.Set("token", token)
 
-		//user, _ := service.GetUser(usr.Sub)
+		//user, err := service.GetUser(usr.Sub)
+		//if err != nil {
+		//	fmt.Println("ERRR " + err.Error())
+		//} else {
+		//	fmt.Println("USER " + auth0.StringValue(user.Email))
+		//}
+
 		//usr.email = user.Email
 
 		//var passwordless bool
@@ -91,7 +74,6 @@ func AlexaIntentHandler(c echo.Context) error {
 		//}
 
 		res, err = GetMyEventsForTodayIntent(usr)
-
 	default:
 		res, err = HandleHelpIntent(u)
 	}

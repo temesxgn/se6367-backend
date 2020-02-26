@@ -41,8 +41,9 @@ func (u *User) UserID() string {
 
 // IsValid - validates the jwt token
 func (u *User) IsValid() bool {
-	// return strings.EqualFold(u.Iss, config.GetAuth0Audience()) && !u.HasExpired()
-	return false
+	//TODO fix this later
+	//return strings.EqualFold(u.Iss, config.GetAuth0()) && !u.HasExpired()
+	return !u.HasExpired()
 }
 
 // HTTPSHasuraIoJwtClaims - Hasura specific claims

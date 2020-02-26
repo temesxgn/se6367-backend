@@ -14,25 +14,12 @@ import (
 
 // GetMyEventsForTodayIntent -
 func GetMyEventsForTodayIntent(user *auth.User) (alexa.Response, error) {
-	// var events []models.Event
-	// user := request.Body.Intent.Slots["user"].Value
-
-	// feedResponse, _ := RequestFeed("frontpage")
-	// var builder alexa.SSMLBuilder
-	// builder.Say("Here are the current frontpage deals:")
-	// builder.Pause("1000")
-	// for _, item := range feedResponse.Channel.Item {
-	// 	builder.Say(item.Title)
-	// 	builder.Pause("1000")
-	// }
-	// return alexa.NewSSMLResponse("Frontpage Deals", builder.Build())
-	// return alexa.Response{}, nil
-
 	var builder ala.SSMLBuilder
 	service := hasura.NewService(config.GetHasuraEndpoint())
 	events, _ := service.GetEvents(context.Background(), &models.EventFilterParams{
 		UserID: auth0.String(user.Sub),
 	})
+
 	if len(events) == 0 {
 		builder.Say("You have no events for today.")
 		builder.Pause("300")
