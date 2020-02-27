@@ -6,9 +6,10 @@ type IntentType string
 // possible alexa intents
 const (
 	GetMyEventsForTodayIntentType IntentType = "GetMyEventsForTodayIntent"
-	CreateEventIntentType         IntentType = "CreateEventIntentType"
-	DeleteEventIntentType         IntentType = "DeleteEventIntentType"
-	SyncEventsIntenType           IntentType = "SyncEventsIntentType"
+	GetEventsForDayIntentType     IntentType = "GetEventsForDayIntent"
+	CreateEventIntentType         IntentType = "CreateEventIntent"
+	DeleteEventIntentType         IntentType = "DeleteEventIntent"
+	SyncEventsIntenType           IntentType = "SyncEventsIntent"
 	HelpIntentType                IntentType = "HelpIntent"
 )
 

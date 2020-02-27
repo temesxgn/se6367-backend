@@ -1,11 +1,12 @@
 package auth
 
 import (
+	"github.com/temesxgn/se6367-backend/config"
 	"strings"
 	"time"
 )
 
-// User - model based off of Auth0 JWT
+// User - model based off of Auth0 JWT with Hasura Claims
 type User struct {
 	Iss    string                 `json:"iss"`
 	Sub    string                 `json:"sub"`
@@ -41,9 +42,7 @@ func (u *User) UserID() string {
 
 // IsValid - validates the jwt token
 func (u *User) IsValid() bool {
-	//TODO fix this later
-	//return strings.EqualFold(u.Iss, config.GetAuth0()) && !u.HasExpired()
-	return !u.HasExpired()
+	return strings.EqualFold(u.Iss, config.GetAuth0Domain()) && !u.HasExpired()
 }
 
 // HTTPSHasuraIoJwtClaims - Hasura specific claims

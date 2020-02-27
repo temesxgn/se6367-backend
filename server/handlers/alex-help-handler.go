@@ -5,7 +5,8 @@ import (
 	ala "github.com/temesxgn/se6367-backend/alexa"
 )
 
-func HandleHelpIntent(request *alexa.Request) (alexa.Response, error) {
+// HandleHelpIntent - returns the possible intents a user can say
+func HandleHelpIntent() (alexa.Response, error) {
 	var builder ala.SSMLBuilder
 	builder.Say("Here are some of the things you can ask:")
 	builder.Pause("1000")

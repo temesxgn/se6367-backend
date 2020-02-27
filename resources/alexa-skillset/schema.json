@@ -1,0 +1,156 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "fair banks",
+      "intents": [
+        {
+          "name": "AMAZON.FallbackIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.CancelIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.HelpIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.StopIntent",
+          "samples": []
+        },
+        {
+          "name": "AMAZON.NavigateHomeIntent",
+          "samples": []
+        },
+        {
+          "name": "GetMyEventsForTodayIntent",
+          "slots": [],
+          "samples": [
+            "my events for today",
+            "today events",
+            "What are my events for today"
+          ]
+        },
+        {
+          "name": "CreateEventIntent",
+          "slots": [
+            {
+              "name": "name",
+              "type": "FreeText"
+            },
+            {
+              "name": "date",
+              "type": "AMAZON.DATE"
+            },
+            {
+              "name": "time",
+              "type": "AMAZON.TIME",
+              "samples": ["all day", "six am to four pm"]
+            }
+          ],
+          "samples": [
+            "on {date} create event {name} at {time}",
+            "create an event {name} on {date} at {time}"
+          ]
+        },
+        {
+          "name": "GetEventsForDayIntent",
+          "slots": [
+            {
+              "name": "date",
+              "type": "AMAZON.DATE"
+            }
+          ],
+          "samples": ["What are my events on {date}"]
+        },
+        {
+          "name": "DeleteEventIntent",
+          "slots": [
+            {
+              "name": "name",
+              "type": "FreeText"
+            },
+            {
+              "name": "date",
+              "type": "AMAZON.DATE"
+            }
+          ],
+          "samples": [
+            "on {date} delete {name}",
+            "delete {name} on {date}",
+            "delete event {name} on {date}"
+          ]
+        }
+      ],
+      "types": [
+        {
+          "name": "FreeText",
+          "values": [
+            {
+              "name": {
+                "value": "Pick up kids"
+              }
+            },
+            {
+              "name": {
+                "value": "Gym"
+              }
+            },
+            {
+              "name": {
+                "value": "Doctor's appointment"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "dialog": {
+      "intents": [
+        {
+          "name": "CreateEventIntent",
+          "confirmationRequired": false,
+          "prompts": {},
+          "slots": [
+            {
+              "name": "time",
+              "type": "AMAZON.TIME",
+              "confirmationRequired": false,
+              "elicitationRequired": true,
+              "prompts": {
+                "elicitation": "Elicit.Slot.1406248182256.34851838454"
+              }
+            },
+            {
+              "name": "name",
+              "type": "FreeText",
+              "confirmationRequired": false,
+              "elicitationRequired": false,
+              "prompts": {}
+            },
+            {
+              "name": "date",
+              "type": "AMAZON.DATE",
+              "confirmationRequired": false,
+              "elicitationRequired": false,
+              "prompts": {}
+            }
+          ]
+        }
+      ],
+      "delegationStrategy": "ALWAYS"
+    },
+    "prompts": [
+      {
+        "id": "Elicit.Slot.1406248182256.34851838454",
+        "variations": [
+          {
+            "type": "PlainText",
+            "value": "What time would you like the event to occur"
+          }
+        ]
+      }
+    ]
+  }
+}
