@@ -10,6 +10,7 @@ const (
 // Tags
 const (
 	CreateEvent = "create.event"
+	GetEvents = "get.events"
 )
 
 // Logger WithField Stats Keys

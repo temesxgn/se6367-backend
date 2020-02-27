@@ -34,22 +34,13 @@ func Middleware() echo.MiddlewareFunc {
 				return c.JSON(http.StatusOK, ala.NewSSMLResponse("Authentication Error", builder.Build()))
 			}
 
-			// if !usr.IsValid() {
-			// 	builder.Say("Error authenticating, please login again")
-			// 	return c.JSON(http.StatusOK, ala.NewSSMLResponse("Authentication Error", builder.Build()))
-			// }
-
-			service := NewService()
-			token, err := service.GetToken()
-			if err != nil {
-				builder.Say("Error authenticating, please try again")
+			if !usr.IsValid() {
+				builder.Say("Error authenticating, please login again")
 				return c.JSON(http.StatusOK, ala.NewSSMLResponse("Authentication Error", builder.Build()))
 			}
 
-			c.Set("token", token)
 			c.Set("user", usr)
 			c.Set("request", request)
-
 			return next(c)
 		}
 	}

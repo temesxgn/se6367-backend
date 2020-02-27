@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/temesxgn/se6367-backend/alexa/handlers"
 	"net/http"
 
 	"github.com/arienmalec/alexa-go"
@@ -14,7 +15,7 @@ func AlexaIntentHandler(c echo.Context) error {
 	request := c.Get("request").(*alexa.Request)
 	usr := c.Get("user").(*auth.User)
 
-	res, err := IntentDispatcher(request, usr)
+	res, err := intentDispatcher(request, usr)
 	if err != nil {
 		return c.JSON(http.StatusOK, ala.NewSSMLResponse("Intent Error", err.Error()))
 	}
@@ -22,12 +23,18 @@ func AlexaIntentHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, res)
 }
 
-// IntentDispatcher -
-func IntentDispatcher(request *alexa.Request, usr *auth.User) (alexa.Response, error) {
+// triggers the event matching the incoming intent request
+func intentDispatcher(request *alexa.Request, usr *auth.User) (alexa.Response, error) {
 	switch request.Body.Intent.Name {
+	case ala.CreateEventIntentType.String():
+		return handlers.CreateEventIntentHandler(request, usr)
 	case ala.GetMyEventsForTodayIntentType.String():
-		return GetMyEventsForTodayIntent(usr)
+		return handlers.GetMyEventsForTodayIntentHandler(usr)
+	case ala.GetEventsForDayIntentType.String():
+		return handlers.GetMyEventsForDayIntentHandler(request, usr)
+	case ala.DeleteEventIntentType.String():
+		return handlers.DeleteEventIntentHandler(request, usr)
 	default:
-		return HandleHelpIntent()
+		return handlers.HandleHelpIntentHandler()
 	}
 }

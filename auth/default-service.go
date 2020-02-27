@@ -43,7 +43,7 @@ type auth0Service struct {
 
 func (s *auth0Service) GetToken() (string, error) {
 	body, _ := jsonutils.Marshal(models.NewAuth0TokenRequest(config.GetAuth0Domain(), config.GetAuth0ClientID(), config.GetAuth0ClientSecret()))
-	res, err := http.Post(fmt.Sprintf("https://%v/oauth/token", config.GetAuth0Domain()), "application/json", bytes.NewReader([]byte(body)))
+	res, err := http.Post(fmt.Sprintf("%voauth/token", config.GetAuth0Domain()), "application/json", bytes.NewReader([]byte(body)))
 	if err != nil {
 		return "", err
 	}

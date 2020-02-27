@@ -8,7 +8,6 @@ import (
 // DefaultPort - Default server port
 const (
 	DefaultPort             = "8081"
-	DefaultStripeRetryCount = 3
 )
 
 // GetValue - loads the config value from the internal map, if not presents loads it from the env, if still missing uses the default

@@ -1,9 +1,10 @@
 package auth
 
 import (
-	"github.com/temesxgn/se6367-backend/config"
 	"strings"
 	"time"
+
+	"github.com/temesxgn/se6367-backend/config"
 )
 
 // User - model based off of Auth0 JWT with Hasura Claims

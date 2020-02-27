@@ -1,7 +1,6 @@
 package fileutils
 
 import (
-	"fmt"
 	"io/ioutil"
 	"path/filepath"
 )
@@ -10,7 +9,6 @@ import (
 func LoadFileAsString(path string) (string, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		fmt.Println("File reading error", err)
 		return "", nil
 	}
 

@@ -9,7 +9,7 @@ import (
 
 func setupRoutes(e *echo.Echo) {
 	e.POST("/alexa", handlers.AlexaIntentHandler, auth.Middleware())
-	//e.POST("/insert", handlers.InsertEventHandler)
+	e.POST("/insert-event-trigger", handlers.InsertEventTriggerHandler)
 }
 
 func setupMiddleWare(e *echo.Echo) {
