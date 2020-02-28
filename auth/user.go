@@ -51,4 +51,5 @@ type HTTPSHasuraIoJwtClaims struct {
 	XHasuraDefaultRole  string   `json:"x-hasura-default-role"`
 	XHasuraAllowedRoles []string `json:"x-hasura-allowed-roles"`
 	XHasuraUserID       string   `json:"x-hasura-user-id"`
+	XHasuraUserEmail    string   `json:"x-hasura-user-email"`
 }

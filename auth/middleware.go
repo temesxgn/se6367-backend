@@ -31,6 +31,7 @@ func Middleware() echo.MiddlewareFunc {
 				builder.Say("Error authenticating, please try again.")
 				builder.Pause("100")
 				builder.Say("If this issue continues please check your status on the alexa app")
+				fmt.Println("ERROR getting user from token: " + err.Error())
 				return c.JSON(http.StatusOK, ala.NewSSMLResponse("Authentication Error", builder.Build()))
 			}
 
@@ -98,9 +99,11 @@ func getUserFromToken(token string) (*User, error) {
 		}
 
 		usr := &User{}
-		if err := tkn.UnsafeClaimsWithoutVerification(usr); err == nil {
-			return usr, nil
+		if err := tkn.UnsafeClaimsWithoutVerification(usr); err != nil {
+			return nil, err
 		}
+
+		return usr, nil
 	}
 
 	return nil, errors.New("malformed authentication request")
