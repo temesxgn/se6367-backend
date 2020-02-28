@@ -75,3 +75,13 @@ func GetAuth0SigningKey() string {
 func GetAuth0APIID() string {
 	return GetValue(Auth0APIID, "")
 }
+
+// GetSendGridSecret - retrieve send grid secret key
+func GetSendGridSecret() string {
+	return GetValue(SendGridSecret, "")
+}
+
+// GetNoReplyEmail - retrieve no reply email address
+func GetNoReplyEmail() string {
+	return GetValue(NoReplyEmail, "")
+}

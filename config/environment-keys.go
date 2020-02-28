@@ -11,4 +11,6 @@ const (
 	Auth0ClientSecretKey = "AUTH0_CLIENT_SECRET"
 	Auth0SigningKey      = "AUTH0_SIGNING_KEY"
 	Auth0APIID           = "AUTH)_API_ID"
+	SendGridSecret           = "SEND_GRID_SECRET"
+	NoReplyEmail             = "NO_REPLY_EMAIL"
 )

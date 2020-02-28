@@ -15,6 +15,8 @@ require (
 	github.com/labstack/gommon v0.3.0 // indirect
 	github.com/matryer/is v1.3.0
 	github.com/pkg/errors v0.9.1
+	github.com/sendgrid/rest v2.4.1+incompatible // indirect
+	github.com/sendgrid/sendgrid-go v3.5.0+incompatible // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/square/go-jose v2.4.1+incompatible
 	github.com/stretchr/testify v1.4.0

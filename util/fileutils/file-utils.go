@@ -15,20 +15,9 @@ func LoadFileAsString(path string) (string, error) {
 	return string(data), nil
 }
 
-// LoadCreateOrderRequestTemplate - loads the create order request template file
-func LoadCreateOrderRequestTemplate() (string, error) {
-	path, _ := filepath.Abs("./slack/templates/create-order-request.txt")
+// LoadEventsTodayEmailTemplate - loads the events today email template file
+func LoadEventsTodayEmailTemplate() (string, error) {
+	path, _ := filepath.Abs("./sendgrid/templates/my-events-today.html")
 	return LoadFileAsString(path)
 }
 
-// LoadCreateOrderConfirmationEmailTemplate - loads the create order confirmation email template file
-func LoadCreateOrderConfirmationEmailTemplate() (string, error) {
-	path, _ := filepath.Abs("./sendgrid/templates/confirmation-email.html")
-	return LoadFileAsString(path)
-}
-
-// LoadCancelOrderEmailTemplate - loads the cancel order email template file
-func LoadCancelOrderEmailTemplate() (string, error) {
-	path, _ := filepath.Abs("./sendgrid/templates/cancel-order.html")
-	return LoadFileAsString(path)
-}
