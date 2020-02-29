@@ -3,6 +3,6 @@ package event
 type ServiceType string
 
 const (
-	HasuraServiceType ServiceType = "hasura"
-	DBServiceType ServiceType = "database"
+	HasuraEventServiceType ServiceType = "hasura"
+	DBEventServiceType     ServiceType = "database"
 )

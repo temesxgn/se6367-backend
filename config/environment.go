@@ -56,6 +56,10 @@ func GetServerPort() string {
 	return GetValue(ServerPort, DefaultPort)
 }
 
+func GetAuth0DomainName() string {
+	return GetValue(Auth0DomainNameKey, "")
+}
+
 func GetAuth0Domain() string {
 	return GetValue(Auth0DomainKey, "")
 }

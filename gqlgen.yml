@@ -50,7 +50,7 @@ models:
   Auth0User:
     model: github.com/temesxgn/se6367-backend/graph/model.Auth0User
   Role:
-    model: github.com/temesxgn/se6367-backend/auth.Role
+    model: github.com/temesxgn/se6367-backend/auth/models.Role
   ID:
     model:
       - github.com/99designs/gqlgen/graphql.ID

@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"github.com/temesxgn/se6367-backend/auth/models"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -46,12 +47,12 @@ func SetValuesFromHeaders(req *http.Request) context.Context {
 }
 
 // GetUser - Retrieve user from context
-func GetUser(ctx context.Context) *User {
+func GetUser(ctx context.Context) *models.User {
 	usr := ctx.Value(UserCtxKey)
 
-	if user, ok := usr.(*User); ok {
+	if user, ok := usr.(*models.User); ok {
 		return user
 	}
 
-	return &User{}
+	return &models.User{}
 }

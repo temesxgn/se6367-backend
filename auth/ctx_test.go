@@ -2,12 +2,13 @@ package auth_test
 
 import (
 	"context"
+	"github.com/temesxgn/se6367-backend/auth/models"
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/temesxgn/se6367-backend/auth"
-	"github.com/temesxgn/se6367-backend/util/jsonutils"
+	"github.com/temesxgn/se6367-backend/common/util/jsonutils"
 )
 
 func TestCtx(t *testing.T) {
@@ -17,7 +18,7 @@ func TestCtx(t *testing.T) {
 }
 
 func testGetUser(t *testing.T) {
-	validUser := &auth.User{}
+	validUser := &models.User{}
 	validUserCtx := context.WithValue(context.Background(), auth.UserCtxKey, validUser)
 
 	nilUserCtx := context.WithValue(context.Background(), auth.UserCtxKey, nil)
@@ -25,11 +26,11 @@ func testGetUser(t *testing.T) {
 	tables := []struct {
 		name string
 		data context.Context
-		want *auth.User
+		want *models.User
 	}{
 		{"get valid user from context", validUserCtx, validUser},
-		{"get nil user from context", nilUserCtx, &auth.User{}},
-		{"get malformed user from context", malformedUserCtx, &auth.User{}},
+		{"get nil user from context", nilUserCtx, &models.User{}},
+		{"get malformed user from context", malformedUserCtx, &models.User{}},
 	}
 
 	for _, tt := range tables {

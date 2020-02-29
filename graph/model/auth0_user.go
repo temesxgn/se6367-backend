@@ -84,4 +84,5 @@ type UserIdentity struct {
 	UserID     *string `json:"user_id,omitempty"`
 	Provider   *string `json:"provider,omitempty"`
 	IsSocial   *bool   `json:"isSocial,omitempty"`
+	AccessToken *string `json:"access_token,omitempty"`
 }

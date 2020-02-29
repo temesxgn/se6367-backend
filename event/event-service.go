@@ -2,11 +2,10 @@ package event
 
 import (
 	"context"
+	"github.com/temesxgn/se6367-backend/common/models"
 	"github.com/temesxgn/se6367-backend/config"
 	"github.com/temesxgn/se6367-backend/hasura"
 	"time"
-
-	"github.com/temesxgn/se6367-backend/hasura/models"
 )
 
 // Service - Event Service interface
@@ -19,9 +18,9 @@ type Service interface {
 
 func GetEventService(eType ServiceType) Service {
 	switch eType {
-	case DBServiceType:
+	case DBEventServiceType:
 		fallthrough
-	case HasuraServiceType:
+	case HasuraEventServiceType:
 		fallthrough
 	default:
 		return hasura.NewService(config.GetHasuraEndpoint())

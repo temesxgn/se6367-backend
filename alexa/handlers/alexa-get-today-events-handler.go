@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"github.com/arienmalec/alexa-go"
 	ala "github.com/temesxgn/se6367-backend/alexa"
-	"github.com/temesxgn/se6367-backend/auth"
+	"github.com/temesxgn/se6367-backend/auth/models"
+	models2 "github.com/temesxgn/se6367-backend/common/models"
 	"github.com/temesxgn/se6367-backend/event"
-	"github.com/temesxgn/se6367-backend/hasura/models"
 	"gopkg.in/auth0.v3"
 )
 
 // GetMyEventsForTodayIntent -
-func GetMyEventsForTodayIntentHandler(user *auth.User) (alexa.Response, error) {
+func GetMyEventsForTodayIntentHandler(user *models.User) (alexa.Response, error) {
 	var builder ala.SSMLBuilder
-	service := event.GetEventService(event.HasuraServiceType)
-	events, _ := service.GetEvents(context.Background(), &models.EventFilterParams{
+	service := event.GetEventService(event.HasuraEventServiceType)
+	events, _ := service.GetEvents(context.Background(), &models2.EventFilterParams{
 		UserID: auth0.String(user.Sub),
 	})
 
