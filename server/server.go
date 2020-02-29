@@ -8,7 +8,9 @@ import (
 )
 
 func setupRoutes(e *echo.Echo) {
-	e.POST("/alexa", handlers.AlexaIntentHandler, auth.Middleware())
+	e.GET("/", handlers.PlaygroundHandler)
+	e.POST("/query", handlers.GraphqlHandler)
+	e.POST("/alexa", handlers.AlexaIntentHandler, auth.AlexaMiddleware())
 	e.POST("/insert-event-trigger", handlers.InsertEventTriggerHandler)
 }
 

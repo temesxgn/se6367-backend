@@ -1,0 +1,8 @@
+type HealthInfo {
+    Auth0Connection: Boolean!
+    DatabaseConnection: Boolean!
+}
+
+type Query {
+    health: HealthInfo!
+}

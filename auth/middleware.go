@@ -1,8 +1,10 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/temesxgn/se6367-backend/config"
 	"net/http"
 	"strings"
 
@@ -13,7 +15,7 @@ import (
 )
 
 // Middleware - validates request and loads user account into the context
-func Middleware() echo.MiddlewareFunc {
+func AlexaMiddleware() echo.MiddlewareFunc {
 	var builder ala.SSMLBuilder
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
@@ -45,6 +47,14 @@ func Middleware() echo.MiddlewareFunc {
 			return next(c)
 		}
 	}
+}
+
+func HasAdminSecret(ctx context.Context) bool {
+	if secret := ctx.Value(AdminSecretCtxKey); strings.EqualFold(secret.(string), config.GetHasuraSecret()) {
+		return true
+	}
+
+	return false
 }
 
 // func Tokenify(next echo.HandlerFunc) echo.HandlerFunc {

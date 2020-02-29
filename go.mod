@@ -3,6 +3,7 @@ module github.com/temesxgn/se6367-backend
 go 1.13
 
 require (
+	github.com/99designs/gqlgen v0.11.1
 	github.com/arienmalec/alexa-go v0.0.0-20181025212142-975687393e90
 	github.com/auth0/go-jwt-middleware v0.0.0-20190805220309-36081240882b
 	github.com/banzaicloud/logrus-runtime-formatter v0.0.0-20190729070250-5ae5475bae5e
@@ -23,7 +24,9 @@ require (
 	github.com/stripe/stripe-go v69.1.0+incompatible
 	github.com/tdewolff/minify v2.3.6+incompatible
 	github.com/tdewolff/parse v2.3.4+incompatible // indirect
+	github.com/thoas/go-funk v0.5.0 // indirect
 	github.com/valyala/fasttemplate v1.1.0 // indirect
+	github.com/vektah/gqlparser/v2 v2.0.1
 	golang.org/x/crypto v0.0.0-20200221231518-2aa609cf4a9d // indirect
 	gopkg.in/auth0.v3 v3.3.0
 	gopkg.in/square/go-jose.v2 v2.4.1 // indirect

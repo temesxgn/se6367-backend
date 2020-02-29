@@ -1,0 +1,19 @@
+type Auth0User {
+    user_metadata: Map
+    identities: [UserIdentity]!
+}
+
+type UserIdentity {
+    connection: String
+    user_id: String
+    provider: String
+    is_social: Boolean
+}
+
+extend type Query {
+    get_profile: Auth0User! @isAuthenticated
+}
+
+type Mutation {
+    update_profile: Boolean! @isAuthenticated
+}
