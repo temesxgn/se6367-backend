@@ -1,4 +1,4 @@
-package integration_service
+package integration
 
 type ServiceType string
 

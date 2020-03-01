@@ -36,5 +36,12 @@ func (s *googleService) GetCalendars() ([]*models.Calendar, error) {
 }
 
 func (s *googleService) GetCalendarEvents(calID string) ([]*models.Event, error) {
+	eventList, err := s.service.Events.List(calID).Do()
+	if err != nil {
+		fmt.Println("ERROR getting calendar events for cal" + calID + " from google " + err.Error())
+		return nil, err
+	}
 
+	events := MapToInternalEvents(eventList)
+	return events, nil
 }

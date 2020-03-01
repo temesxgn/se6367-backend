@@ -1,8 +1,8 @@
-package integration_service
+package integration
 
 import (
 	"github.com/temesxgn/se6367-backend/common/models"
-	"github.com/temesxgn/se6367-backend/integration-service/google"
+	"github.com/temesxgn/se6367-backend/integration/google"
 )
 
 type Service interface {
@@ -12,7 +12,7 @@ type Service interface {
 	//DeleteEventOnCalendar(eventID, calendarID string)
 }
 
-func GetIntegrationService(token string, iType ServiceType) (Service, error) {
+func GetCalendarIntegrationService(token string, iType ServiceType) (Service, error) {
 	switch iType {
 	case GoogleServiceType:
 		fallthrough
