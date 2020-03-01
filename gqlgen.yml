@@ -12,7 +12,7 @@ exec:
 #   filename: graph/generated/federation.go
 #   package: generated
 
-# Where should any generated models go?
+# Where should any generated model go?
 model:
   filename: graph/model/models_gen.go
   package: model
@@ -23,7 +23,7 @@ resolver:
   dir: graph
   package: graph
 
-# Optional: turn on use `gqlgen:"fieldName"` tags in your models
+# Optional: turn on use `gqlgen:"fieldName"` tags in your model
 # struct_tag: json
 
 # Optional: turn on to use []Thing instead of []*Thing
@@ -50,7 +50,7 @@ models:
   Auth0User:
     model: github.com/temesxgn/se6367-backend/graph/model.Auth0User
   Role:
-    model: github.com/temesxgn/se6367-backend/auth/models.Role
+    model: github.com/temesxgn/se6367-backend/auth/model.Role
   ID:
     model:
       - github.com/99designs/gqlgen/graphql.ID

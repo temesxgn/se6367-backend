@@ -6,13 +6,14 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"github.com/temesxgn/se6367-backend/auth/models"
+	"fmt"
 	"strconv"
 	"sync"
 	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
+	"github.com/temesxgn/se6367-backend/auth/model"
 	"github.com/temesxgn/se6367-backend/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -41,7 +42,7 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
-	HasRole         func(ctx context.Context, obj interface{}, next graphql.Resolver, role models.Role) (res interface{}, err error)
+	HasRole         func(ctx context.Context, obj interface{}, next graphql.Resolver, role model.Role) (res interface{}, err error)
 	IsAuthenticated func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
 }
 
@@ -250,11 +251,11 @@ type UserIdentity {
 }
 
 extend type Query {
-    get_profile: Auth0User!
+    get_profile: Auth0User! @isAuthenticated
 }
 
-extend type Mutation {
-    update_profile: Boolean!
+type Mutation {
+    update_profile: Boolean! @isAuthenticated
 }
 `, BuiltIn: false},
 	&ast.Source{Name: "graph/schemas/directives.graphql", Input: `directive @isAuthenticated on FIELD | FIELD_DEFINITION
@@ -276,7 +277,8 @@ scalar Timestamp`, BuiltIn: false},
 
 type Query {
     health: HealthInfo!
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -287,9 +289,9 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 func (ec *executionContext) dir_hasRole_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 models.Role
+	var arg0 model.Role
 	if tmp, ok := rawArgs["role"]; ok {
-		arg0, err = ec.unmarshalNRole2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐRole(ctx, tmp)
+		arg0, err = ec.unmarshalNRole2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋauthᚋmodelsᚐRole(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -507,8 +509,28 @@ func (ec *executionContext) _Mutation_update_profile(ctx context.Context, field 
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateProfile(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateProfile(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuthenticated == nil {
+				return nil, errors.New("directive isAuthenticated is not implemented")
+			}
+			return ec.directives.IsAuthenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, err
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 
 	if resTmp == nil {
@@ -569,8 +591,28 @@ func (ec *executionContext) _Query_get_profile(ctx context.Context, field graphq
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetProfile(rctx)
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Query().GetProfile(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuthenticated == nil {
+				return nil, errors.New("directive isAuthenticated is not implemented")
+			}
+			return ec.directives.IsAuthenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, err
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*model.Auth0User); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/temesxgn/se6367-backend/graph/model.Auth0User`, tmp)
 	})
 
 	if resTmp == nil {
@@ -2193,12 +2235,12 @@ func (ec *executionContext) marshalNHealthInfo2ᚖgithubᚗcomᚋtemesxgnᚋse63
 	return ec._HealthInfo(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNRole2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐRole(ctx context.Context, v interface{}) (models.Role, error) {
-	var res models.Role
+func (ec *executionContext) unmarshalNRole2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋauthᚋmodelsᚐRole(ctx context.Context, v interface{}) (model.Role, error) {
+	var res model.Role
 	return res, res.UnmarshalGQL(v)
 }
 
-func (ec *executionContext) marshalNRole2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐRole(ctx context.Context, sel ast.SelectionSet, v models.Role) graphql.Marshaler {
+func (ec *executionContext) marshalNRole2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋauthᚋmodelsᚐRole(ctx context.Context, sel ast.SelectionSet, v model.Role) graphql.Marshaler {
 	return v
 }
 

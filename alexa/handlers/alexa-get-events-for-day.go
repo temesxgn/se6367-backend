@@ -5,14 +5,14 @@ import (
 	"fmt"
 	"github.com/arienmalec/alexa-go"
 	ala "github.com/temesxgn/se6367-backend/alexa"
-	"github.com/temesxgn/se6367-backend/auth/models"
+	"github.com/temesxgn/se6367-backend/auth/model"
 	models2 "github.com/temesxgn/se6367-backend/common/models"
 	"github.com/temesxgn/se6367-backend/event"
 	"gopkg.in/auth0.v3"
 )
 
 // GetMyEventsForTodayIntent -
-func GetMyEventsForDayIntentHandler(request *alexa.Request, user *models.User) (alexa.Response, error) {
+func GetMyEventsForDayIntentHandler(request *alexa.Request, user *model.User) (alexa.Response, error) {
 	var builder ala.SSMLBuilder
 	service := event.GetEventService(event.HasuraEventServiceType)
 	events, _ := service.GetEvents(context.Background(), &models2.EventFilterParams{

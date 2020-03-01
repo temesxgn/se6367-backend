@@ -3,7 +3,7 @@ package hasura
 import (
 	"context"
 	"fmt"
-	"github.com/temesxgn/se6367-backend/auth"
+	"github.com/temesxgn/se6367-backend/auth/ctx"
 	"github.com/temesxgn/se6367-backend/common/client/graphql"
 	models2 "github.com/temesxgn/se6367-backend/common/models"
 	"github.com/temesxgn/se6367-backend/config"
@@ -23,7 +23,7 @@ func log(s string) {
 func initialize(endpoint string) {
 	once.Do(func() {
 		client := graphql.NewClient(endpoint, log)
-		client.AddDefaultHeader(auth.AdminSecretCtxKey.String(), config.GetHasuraSecret())
+		client.AddDefaultHeader(ctx.AdminSecretCtxKey.String(), config.GetHasuraSecret())
 		service = &hasuraService{
 			client,
 		}
@@ -64,7 +64,7 @@ func (h *hasuraService) GetEvents(ctx context.Context, filter *models2.EventFilt
 
 // GetEvent - retrieve event with the given id
 func (h *hasuraService) GetEvent(ctx context.Context, id string) (models2.Event, error) {
-	//var respData models.GetEventResponse
+	//var respData model.GetEventResponse
 	//req := graphql.NewRequest(`
 	//	query MyQuery($id: String!) {
 	//	  event_by_pk(id: $id) {

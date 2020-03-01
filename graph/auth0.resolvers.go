@@ -5,22 +5,23 @@ package graph
 import (
 	"context"
 	"fmt"
+	"github.com/temesxgn/se6367-backend/auth/ctx"
+
 	"github.com/temesxgn/se6367-backend/auth"
 	"github.com/temesxgn/se6367-backend/graph/generated"
 	"github.com/temesxgn/se6367-backend/graph/model"
-	"gopkg.in/auth0.v3"
+	auth0 "gopkg.in/auth0.v3"
 )
 
 func (r *mutationResolver) UpdateProfile(ctx context.Context) (bool, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) GetProfile(ctx context.Context) (*model.Auth0User, error) {
-	user := auth.GetUser(ctx)
-	user.Claims.XHasuraUserID = "google-oauth2|106351315933299331745"
+func (r *queryResolver) GetProfile(context context.Context) (*model.Auth0User, error) {
+	user := ctx.GetUser(context)
 	service, err := auth.GetAuthService(auth.AuthZeroAuthServiceType)
 	if err != nil {
-		fmt.Println("Error get authentication service " + err.Error())
+		fmt.Println("Error getting authentication service " + err.Error())
 		return nil, err
 	}
 
@@ -37,20 +38,20 @@ func (r *queryResolver) GetProfile(ctx context.Context) (*model.Auth0User, error
 			UserID:     uid.UserID,
 			Provider:   uid.Provider,
 			IsSocial:   uid.IsSocial,
-
+			AccessToken: uid.AccessToken,
 		}
-
-
-		//d, _ := jsonutils.Marshal(id)
-		fmt.Println(fmt.Sprintf("ACCESS TOKEN: %v", auth0.StringValue(uid.AccessToken)))
 
 		ids = append(ids, id)
 	}
 
 	return &model.Auth0User{
-		Email: usr.Email,
+		Email:      usr.Email,
+		Nickname: usr.Nickname,
+		PhoneNumber: usr.PhoneNumber,
+		UserMetadata: usr.UserMetadata,
+		AppMetadata: usr.AppMetadata,
+		Picture: usr.Picture,
 		Identities: ids,
-
 	}, nil
 }
 

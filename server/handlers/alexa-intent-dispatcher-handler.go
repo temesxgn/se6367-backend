@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/temesxgn/se6367-backend/alexa/handlers"
-	"github.com/temesxgn/se6367-backend/auth/models"
+	"github.com/temesxgn/se6367-backend/auth/model"
 	"net/http"
 
 	"github.com/arienmalec/alexa-go"
@@ -13,7 +13,7 @@ import (
 // AlexaIntentHandler - endpoint to handle requests from alexa
 func AlexaIntentHandler(c echo.Context) error {
 	request := c.Get("request").(*alexa.Request)
-	usr := c.Get("user").(*models.User)
+	usr := c.Get("user").(*model.User)
 
 	res, err := intentDispatcher(request, usr)
 	if err != nil {
@@ -24,7 +24,7 @@ func AlexaIntentHandler(c echo.Context) error {
 }
 
 // triggers the event matching the incoming intent request
-func intentDispatcher(request *alexa.Request, usr *models.User) (alexa.Response, error) {
+func intentDispatcher(request *alexa.Request, usr *model.User) (alexa.Response, error) {
 	switch request.Body.Intent.Name {
 	case ala.CreateEventIntentType.String():
 		return handlers.CreateEventIntentHandler(request, usr)

@@ -1,9 +1,12 @@
-package auth
+package ctx
 
 import (
 	"context"
-	"github.com/temesxgn/se6367-backend/auth/models"
+	"errors"
+	"github.com/temesxgn/se6367-backend/auth/model"
+	"gopkg.in/square/go-jose.v2/jwt"
 	"net/http"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo"
@@ -36,23 +39,43 @@ func SetValuesFromHeaders(req *http.Request) context.Context {
 	}
 
 	token := req.Header.Get(AuthorizationCtxKey.String())
-	ctx := context.WithValue(req.Context(), AdminSecretCtxKey, req.Header.Get(AdminSecretCtxKey.String()))
+	usr, _ := GetUserFromToken(token)
+	ctx := context.WithValue(req.Context(), UserCtxKey, usr)
+	ctx = context.WithValue(ctx, AdminSecretCtxKey, req.Header.Get(AdminSecretCtxKey.String()))
 	ctx = context.WithValue(ctx, APIKey, req.Header.Get(APIKey.String()))
 	ctx = context.WithValue(ctx, APISecret, req.Header.Get(APISecret.String()))
 	ctx = context.WithValue(ctx, AuthorizationCtxKey, token)
 	ctx = context.WithValue(ctx, echo.HeaderXRequestID, reqID)
-	// ctx = context.WithValue(ctx, UserCtxKey, GetUserFromToken(token))
 
 	return ctx
 }
 
 // GetUser - Retrieve user from context
-func GetUser(ctx context.Context) *models.User {
+func GetUser(ctx context.Context) *model.User {
 	usr := ctx.Value(UserCtxKey)
 
-	if user, ok := usr.(*models.User); ok {
+	if user, ok := usr.(*model.User); ok {
 		return user
 	}
 
-	return &models.User{}
+	return &model.User{}
+}
+
+func GetUserFromToken(token string) (*model.User, error) {
+	if split := strings.Split(token, " "); len(split) == 2 {
+		token := split[1]
+		tkn, err := jwt.ParseSigned(token)
+		if err != nil {
+			return nil, err
+		}
+
+		usr := &model.User{}
+		if err := tkn.UnsafeClaimsWithoutVerification(usr); err != nil {
+			return nil, err
+		}
+
+		return usr, nil
+	}
+
+	return nil, errors.New("malformed authentication request")
 }

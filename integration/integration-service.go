@@ -8,7 +8,7 @@ import (
 type Service interface {
 	GetCalendars() ([]*models.Calendar, error)
 	GetCalendarEvents(calID string) ([]*models.Event, error)
-	//AddEventToCalendar(event models.Event, calendarID string) error
+	//AddEventToCalendar(event model.Event, calendarID string) error
 	//DeleteEventOnCalendar(eventID, calendarID string)
 }
 

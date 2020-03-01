@@ -1,13 +1,13 @@
-package auth_test
+package ctx_test
 
 import (
 	"context"
-	"github.com/temesxgn/se6367-backend/auth/models"
+	"github.com/temesxgn/se6367-backend/auth/ctx"
+	"github.com/temesxgn/se6367-backend/auth/model"
 	"net/http"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/temesxgn/se6367-backend/auth"
 	"github.com/temesxgn/se6367-backend/common/util/jsonutils"
 )
 
@@ -18,24 +18,24 @@ func TestCtx(t *testing.T) {
 }
 
 func testGetUser(t *testing.T) {
-	validUser := &models.User{}
-	validUserCtx := context.WithValue(context.Background(), auth.UserCtxKey, validUser)
+	validUser := &model.User{}
+	validUserCtx := context.WithValue(context.Background(), ctx.UserCtxKey, validUser)
 
-	nilUserCtx := context.WithValue(context.Background(), auth.UserCtxKey, nil)
-	malformedUserCtx := context.WithValue(context.Background(), auth.UserCtxKey, "")
+	nilUserCtx := context.WithValue(context.Background(), ctx.UserCtxKey, nil)
+	malformedUserCtx := context.WithValue(context.Background(), ctx.UserCtxKey, "")
 	tables := []struct {
 		name string
 		data context.Context
-		want *models.User
+		want *model.User
 	}{
 		{"get valid user from context", validUserCtx, validUser},
-		{"get nil user from context", nilUserCtx, &models.User{}},
-		{"get malformed user from context", malformedUserCtx, &models.User{}},
+		{"get nil user from context", nilUserCtx, &model.User{}},
+		{"get malformed user from context", malformedUserCtx, &model.User{}},
 	}
 
 	for _, tt := range tables {
 		t.Run(tt.name, func(t *testing.T) {
-			got := auth.GetUser(tt.data)
+			got := ctx.GetUser(tt.data)
 			gJSON, _ := jsonutils.Marshal(got)
 			wJSON, _ := jsonutils.Marshal(tt.want)
 			assert.EqualValues(t, got, tt.want, "Expected %s, Actual %s", wJSON, gJSON)
@@ -45,7 +45,7 @@ func testGetUser(t *testing.T) {
 
 func testSetValuesFromHeaders(t *testing.T) {
 	req, _ := http.NewRequest("", "", nil)
-	req.Header.Add(auth.AuthorizationCtxKey.String(), "")
+	req.Header.Add(ctx.AuthorizationCtxKey.String(), "")
 
 	tables := []struct {
 		name string
@@ -55,7 +55,7 @@ func testSetValuesFromHeaders(t *testing.T) {
 
 	for _, tt := range tables {
 		t.Run(tt.name, func(t *testing.T) {
-			got := auth.SetValuesFromHeaders(tt.data)
+			got := ctx.SetValuesFromHeaders(tt.data)
 			gJSON, _ := jsonutils.Marshal(got)
 			wJSON, _ := jsonutils.Marshal(tt.want)
 			assert.EqualValues(t, got, tt.want, "Expected %s, Actual %s", wJSON, gJSON)

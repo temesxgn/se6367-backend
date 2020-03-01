@@ -2,17 +2,14 @@ package middleware
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"github.com/temesxgn/se6367-backend/auth"
-	"github.com/temesxgn/se6367-backend/auth/models"
+	"github.com/temesxgn/se6367-backend/auth/ctx"
 	"github.com/temesxgn/se6367-backend/config"
 	"net/http"
 	"strings"
 
 	"github.com/arienmalec/alexa-go"
 	"github.com/labstack/echo"
-	"github.com/square/go-jose/jwt"
 	ala "github.com/temesxgn/se6367-backend/alexa"
 )
 
@@ -30,7 +27,7 @@ func AlexaMiddleware() echo.MiddlewareFunc {
 			}
 
 			c.Request().Header.Set("Authorization", fmt.Sprintf("Bearer %s", request.Session.User.AccessToken))
-			usr, err := getUserFromToken(c.Request().Header.Get("Authorization"))
+			usr, err := ctx.GetUserFromToken(c.Request().Header.Get("Authorization"))
 			if err != nil {
 				builder.Say("Error authenticating, please try again.")
 				builder.Pause("100")
@@ -51,8 +48,8 @@ func AlexaMiddleware() echo.MiddlewareFunc {
 	}
 }
 
-func HasAdminSecret(ctx context.Context) bool {
-	if secret := ctx.Value(auth.AdminSecretCtxKey); strings.EqualFold(secret.(string), config.GetHasuraSecret()) {
+func HasAdminSecret(context context.Context) bool {
+	if secret := context.Value(ctx.AdminSecretCtxKey); strings.EqualFold(secret.(string), config.GetHasuraSecret()) {
 		return true
 	}
 
@@ -102,21 +99,3 @@ func HasAdminSecret(ctx context.Context) bool {
 
 // }
 
-func getUserFromToken(token string) (*models.User, error) {
-	if split := strings.Split(token, " "); len(split) == 2 {
-		token := split[1]
-		tkn, err := jwt.ParseSigned(token)
-		if err != nil {
-			return nil, err
-		}
-
-		usr := &models.User{}
-		if err := tkn.UnsafeClaimsWithoutVerification(usr); err != nil {
-			return nil, err
-		}
-
-		return usr, nil
-	}
-
-	return nil, errors.New("malformed authentication request")
-}
