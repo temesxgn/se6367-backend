@@ -1,24 +1,30 @@
-type Auth0User {
+type Auth0Profile {
     Nickname: String
     PHoneNumber: String
     user_metadata: Map
     app_metadata: Map
     picture: String
-    identities: [UserIdentity]!
+    identities: [UserIdentity!]!
 }
 
 type UserIdentity {
-    connection: String
-    user_id: String
-    provider: String
-    is_social: Boolean
+    connection: String!
+    user_id: String!
+    provider: String!
+    is_social: Boolean!
     access_token: String
 }
 
-extend type Query {
-    get_profile: Auth0User! @isAuthenticated
+input UpdateAuth0Profile {
+    Nickname: String
+    user_metadata: Map
+    picture: String
 }
 
-type Mutation {
-    update_profile: Boolean! @isAuthenticated
+extend type Query {
+    get_profile: Auth0Profile! @isAuthenticated
+}
+
+extend type Mutation {
+    update_profile(data: UpdateAuth0Profile!): Boolean! @isAuthenticated
 }

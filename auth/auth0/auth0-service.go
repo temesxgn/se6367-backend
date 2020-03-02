@@ -90,13 +90,12 @@ func (s *auth0Service) GetUser(userID string) (*model.Auth0User, error) {
 		return nil, errors.Wrap(err, "reading body")
 	}
 
-	fmt.Println(buf.String())
-	var user *model.Auth0User
+	var user model.Auth0User
 	if err := jsonutils.Unmarshal(buf.String(), &user); err != nil {
 		return nil, err
 	}
 
-	return user, nil
+	return &user, nil
 
 }
 

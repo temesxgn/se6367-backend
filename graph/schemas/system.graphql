@@ -1,8 +1,12 @@
 type HealthInfo {
-    Auth0Connection: Boolean!
-    DatabaseConnection: Boolean!
+    Auth0Connection: String!
+    DatabaseConnection: String!
 }
 
 type Query {
     health: HealthInfo!
+}
+
+type Mutation {
+    restart: Boolean! @hasRole(role: ADMIN)
 }
