@@ -1,7 +1,5 @@
 package model
 
-import "fmt"
-
 type Auth0ClientCredentialsTokenRequest struct {
 	Audience     string `json:"audience"`
 	GrantType    string `json:"grant_type"`
@@ -11,13 +9,14 @@ type Auth0ClientCredentialsTokenRequest struct {
 
 type Auth0ClientCredentialsTokenResponse struct {
 	AccessToken string `json:"access_token"`
-	TokenType   string `json:"token_type"`
+	Scope       string `json:"scope"`
 	ExpiresIn   int    `json:"expires_in"`
+	TokenType   string `json:"token_type"`
 }
 
-func NewAuth0TokenRequest(domain, id, secret string) *Auth0ClientCredentialsTokenRequest {
+func NewAuth0TokenRequest(audience, id, secret string) *Auth0ClientCredentialsTokenRequest {
 	return &Auth0ClientCredentialsTokenRequest{
-		Audience:     fmt.Sprintf("https://%v/oauth/token", domain),
+		Audience:     audience,
 		GrantType:    "client_credentials",
 		ClientID:     id,
 		ClientSecret: secret,
