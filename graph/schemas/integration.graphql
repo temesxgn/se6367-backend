@@ -1,0 +1,3 @@
+extend type Mutation {
+    sync_events(integration: IntegrationType): Boolean! @hasIntegration
+}

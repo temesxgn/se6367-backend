@@ -16,11 +16,13 @@ func NewService(token string) (*googleService, error) {
 
 	return &googleService{
 		service,
+		token,
 	}, nil
 }
 
 type googleService struct {
 	service *calendar.Service
+	token string
 }
 
 // GetCalendars - retrieve the list of users calendar
