@@ -15,6 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/temesxgn/se6367-backend/auth/model"
 	model1 "github.com/temesxgn/se6367-backend/graph/model"
+	"github.com/temesxgn/se6367-backend/integration"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -37,17 +38,19 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	HealthInfo() HealthInfoResolver
 	Mutation() MutationResolver
 	Query() QueryResolver
 }
 
 type DirectiveRoot struct {
+	HasIntegration  func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
 	HasRole         func(ctx context.Context, obj interface{}, next graphql.Resolver, role model.Role) (res interface{}, err error)
 	IsAuthenticated func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
 }
 
 type ComplexityRoot struct {
-	Auth0User struct {
+	Auth0Profile struct {
 		AppMetadata  func(childComplexity int) int
 		Identities   func(childComplexity int) int
 		Nickname     func(childComplexity int) int
@@ -62,7 +65,9 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		UpdateProfile func(childComplexity int) int
+		Restart       func(childComplexity int) int
+		SyncEvents    func(childComplexity int, integration integration.ServiceType) int
+		UpdateProfile func(childComplexity int, data model1.UpdateAuth0Profile) int
 	}
 
 	Query struct {
@@ -79,12 +84,18 @@ type ComplexityRoot struct {
 	}
 }
 
+type HealthInfoResolver interface {
+	Auth0Connection(ctx context.Context, obj *model1.HealthInfo) (string, error)
+	DatabaseConnection(ctx context.Context, obj *model1.HealthInfo) (string, error)
+}
 type MutationResolver interface {
-	UpdateProfile(ctx context.Context) (bool, error)
+	Restart(ctx context.Context) (bool, error)
+	UpdateProfile(ctx context.Context, data model1.UpdateAuth0Profile) (bool, error)
+	SyncEvents(ctx context.Context, integration integration.ServiceType) (bool, error)
 }
 type QueryResolver interface {
 	Health(ctx context.Context) (*model1.HealthInfo, error)
-	GetProfile(ctx context.Context) (*model1.Auth0User, error)
+	GetProfile(ctx context.Context) (*model1.Auth0Profile, error)
 }
 
 type executableSchema struct {
@@ -102,47 +113,47 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "Auth0User.app_metadata":
-		if e.complexity.Auth0User.AppMetadata == nil {
+	case "Auth0Profile.app_metadata":
+		if e.complexity.Auth0Profile.AppMetadata == nil {
 			break
 		}
 
-		return e.complexity.Auth0User.AppMetadata(childComplexity), true
+		return e.complexity.Auth0Profile.AppMetadata(childComplexity), true
 
-	case "Auth0User.identities":
-		if e.complexity.Auth0User.Identities == nil {
+	case "Auth0Profile.identities":
+		if e.complexity.Auth0Profile.Identities == nil {
 			break
 		}
 
-		return e.complexity.Auth0User.Identities(childComplexity), true
+		return e.complexity.Auth0Profile.Identities(childComplexity), true
 
-	case "Auth0User.Nickname":
-		if e.complexity.Auth0User.Nickname == nil {
+	case "Auth0Profile.Nickname":
+		if e.complexity.Auth0Profile.Nickname == nil {
 			break
 		}
 
-		return e.complexity.Auth0User.Nickname(childComplexity), true
+		return e.complexity.Auth0Profile.Nickname(childComplexity), true
 
-	case "Auth0User.PHoneNumber":
-		if e.complexity.Auth0User.PhoneNumber == nil {
+	case "Auth0Profile.PhoneNumber":
+		if e.complexity.Auth0Profile.PhoneNumber == nil {
 			break
 		}
 
-		return e.complexity.Auth0User.PhoneNumber(childComplexity), true
+		return e.complexity.Auth0Profile.PhoneNumber(childComplexity), true
 
-	case "Auth0User.picture":
-		if e.complexity.Auth0User.Picture == nil {
+	case "Auth0Profile.picture":
+		if e.complexity.Auth0Profile.Picture == nil {
 			break
 		}
 
-		return e.complexity.Auth0User.Picture(childComplexity), true
+		return e.complexity.Auth0Profile.Picture(childComplexity), true
 
-	case "Auth0User.user_metadata":
-		if e.complexity.Auth0User.UserMetadata == nil {
+	case "Auth0Profile.user_metadata":
+		if e.complexity.Auth0Profile.UserMetadata == nil {
 			break
 		}
 
-		return e.complexity.Auth0User.UserMetadata(childComplexity), true
+		return e.complexity.Auth0Profile.UserMetadata(childComplexity), true
 
 	case "HealthInfo.Auth0Connection":
 		if e.complexity.HealthInfo.Auth0Connection == nil {
@@ -158,12 +169,36 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.HealthInfo.DatabaseConnection(childComplexity), true
 
+	case "Mutation.restart":
+		if e.complexity.Mutation.Restart == nil {
+			break
+		}
+
+		return e.complexity.Mutation.Restart(childComplexity), true
+
+	case "Mutation.sync_events":
+		if e.complexity.Mutation.SyncEvents == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_sync_events_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SyncEvents(childComplexity, args["integration"].(integration.ServiceType)), true
+
 	case "Mutation.update_profile":
 		if e.complexity.Mutation.UpdateProfile == nil {
 			break
 		}
 
-		return e.complexity.Mutation.UpdateProfile(childComplexity), true
+		args, err := ec.field_Mutation_update_profile_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateProfile(childComplexity, args["data"].(model1.UpdateAuth0Profile)), true
 
 	case "Query.get_profile":
 		if e.complexity.Query.GetProfile == nil {
@@ -278,52 +313,67 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	&ast.Source{Name: "graph/schemas/auth0.graphql", Input: `type Auth0User {
+	&ast.Source{Name: "graph/schemas/auth0.graphql", Input: `type Auth0Profile {
     Nickname: String
-    PHoneNumber: String
+    PhoneNumber: String
     user_metadata: Map
     app_metadata: Map
     picture: String
-    identities: [UserIdentity]!
+    identities: [UserIdentity!]!
 }
 
 type UserIdentity {
-    connection: String
-    user_id: String
-    provider: String
-    is_social: Boolean
+    connection: String!
+    user_id: String!
+    provider: String!
+    is_social: Boolean!
     access_token: String
 }
 
-extend type Query {
-    get_profile: Auth0User! @isAuthenticated
+input UpdateAuth0Profile {
+    Nickname: String
+    user_metadata: Map
+    picture: String
 }
 
-type Mutation {
-    update_profile: Boolean! @isAuthenticated
+extend type Query {
+    get_profile: Auth0Profile! @isAuthenticated
+}
+
+extend type Mutation {
+    update_profile(data: UpdateAuth0Profile!): Boolean! @isAuthenticated
 }
 `, BuiltIn: false},
 	&ast.Source{Name: "graph/schemas/directives.graphql", Input: `directive @isAuthenticated on FIELD | FIELD_DEFINITION
-
 directive @hasRole(role: Role!) on FIELD_DEFINITION
-
 enum Role {
   ADMIN
   USER
   UNAUTHENTICATED
 }
+
+directive @hasIntegration on FIELD_DEFINITION
+enum IntegrationType {
+  GOOGLE
+}
 `, BuiltIn: false},
+	&ast.Source{Name: "graph/schemas/integration.graphql", Input: `extend type Mutation {
+    sync_events(integration: IntegrationType!): Boolean! @isAuthenticated
+}`, BuiltIn: false},
 	&ast.Source{Name: "graph/schemas/scalar.graphql", Input: `scalar Map
 scalar Timestamp`, BuiltIn: false},
 	&ast.Source{Name: "graph/schemas/system.graphql", Input: `type HealthInfo {
-    Auth0Connection: Boolean!
-    DatabaseConnection: Boolean!
+    Auth0Connection: String!
+    DatabaseConnection: String!
 }
 
 type Query {
     health: HealthInfo!
 }
-`, BuiltIn: false},
+
+type Mutation {
+    restart: Boolean! @hasRole(role: ADMIN)
+}`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -342,6 +392,34 @@ func (ec *executionContext) dir_hasRole_args(ctx context.Context, rawArgs map[st
 		}
 	}
 	args["role"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_sync_events_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 integration.ServiceType
+	if tmp, ok := rawArgs["integration"]; ok {
+		arg0, err = ec.unmarshalNIntegrationType2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋintegrationᚐServiceType(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["integration"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_update_profile_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 model1.UpdateAuth0Profile
+	if tmp, ok := rawArgs["data"]; ok {
+		arg0, err = ec.unmarshalNUpdateAuth0Profile2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐUpdateAuth0Profile(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["data"] = arg0
 	return args, nil
 }
 
@@ -417,7 +495,7 @@ func (ec *executionContext) _fieldMiddleware(ctx context.Context, obj interface{
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Auth0User_Nickname(ctx context.Context, field graphql.CollectedField, obj *model1.Auth0User) (ret graphql.Marshaler) {
+func (ec *executionContext) _Auth0Profile_Nickname(ctx context.Context, field graphql.CollectedField, obj *model1.Auth0Profile) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -425,7 +503,7 @@ func (ec *executionContext) _Auth0User_Nickname(ctx context.Context, field graph
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Auth0User",
+		Object:   "Auth0Profile",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -445,7 +523,7 @@ func (ec *executionContext) _Auth0User_Nickname(ctx context.Context, field graph
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Auth0User_PHoneNumber(ctx context.Context, field graphql.CollectedField, obj *model1.Auth0User) (ret graphql.Marshaler) {
+func (ec *executionContext) _Auth0Profile_PhoneNumber(ctx context.Context, field graphql.CollectedField, obj *model1.Auth0Profile) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -453,7 +531,7 @@ func (ec *executionContext) _Auth0User_PHoneNumber(ctx context.Context, field gr
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Auth0User",
+		Object:   "Auth0Profile",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -473,7 +551,7 @@ func (ec *executionContext) _Auth0User_PHoneNumber(ctx context.Context, field gr
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Auth0User_user_metadata(ctx context.Context, field graphql.CollectedField, obj *model1.Auth0User) (ret graphql.Marshaler) {
+func (ec *executionContext) _Auth0Profile_user_metadata(ctx context.Context, field graphql.CollectedField, obj *model1.Auth0Profile) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -481,7 +559,7 @@ func (ec *executionContext) _Auth0User_user_metadata(ctx context.Context, field 
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Auth0User",
+		Object:   "Auth0Profile",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -501,7 +579,7 @@ func (ec *executionContext) _Auth0User_user_metadata(ctx context.Context, field 
 	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Auth0User_app_metadata(ctx context.Context, field graphql.CollectedField, obj *model1.Auth0User) (ret graphql.Marshaler) {
+func (ec *executionContext) _Auth0Profile_app_metadata(ctx context.Context, field graphql.CollectedField, obj *model1.Auth0Profile) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -509,7 +587,7 @@ func (ec *executionContext) _Auth0User_app_metadata(ctx context.Context, field g
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Auth0User",
+		Object:   "Auth0Profile",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -529,7 +607,7 @@ func (ec *executionContext) _Auth0User_app_metadata(ctx context.Context, field g
 	return ec.marshalOMap2map(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Auth0User_picture(ctx context.Context, field graphql.CollectedField, obj *model1.Auth0User) (ret graphql.Marshaler) {
+func (ec *executionContext) _Auth0Profile_picture(ctx context.Context, field graphql.CollectedField, obj *model1.Auth0Profile) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -537,7 +615,7 @@ func (ec *executionContext) _Auth0User_picture(ctx context.Context, field graphq
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Auth0User",
+		Object:   "Auth0Profile",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -557,7 +635,7 @@ func (ec *executionContext) _Auth0User_picture(ctx context.Context, field graphq
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Auth0User_identities(ctx context.Context, field graphql.CollectedField, obj *model1.Auth0User) (ret graphql.Marshaler) {
+func (ec *executionContext) _Auth0Profile_identities(ctx context.Context, field graphql.CollectedField, obj *model1.Auth0Profile) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -565,7 +643,7 @@ func (ec *executionContext) _Auth0User_identities(ctx context.Context, field gra
 		}
 	}()
 	fc := &graphql.FieldContext{
-		Object:   "Auth0User",
+		Object:   "Auth0Profile",
 		Field:    field,
 		Args:     nil,
 		IsMethod: false,
@@ -585,7 +663,7 @@ func (ec *executionContext) _Auth0User_identities(ctx context.Context, field gra
 	}
 	res := resTmp.([]*model1.UserIdentity)
 	fc.Result = res
-	return ec.marshalNUserIdentity2ᚕᚖgithubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐUserIdentity(ctx, field.Selections, res)
+	return ec.marshalNUserIdentity2ᚕᚖgithubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐUserIdentityᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _HealthInfo_Auth0Connection(ctx context.Context, field graphql.CollectedField, obj *model1.HealthInfo) (ret graphql.Marshaler) {
@@ -599,13 +677,13 @@ func (ec *executionContext) _HealthInfo_Auth0Connection(ctx context.Context, fie
 		Object:   "HealthInfo",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Auth0Connection, nil
+		return ec.resolvers.HealthInfo().Auth0Connection(rctx, obj)
 	})
 
 	if resTmp == nil {
@@ -614,9 +692,9 @@ func (ec *executionContext) _HealthInfo_Auth0Connection(ctx context.Context, fie
 		}
 		return graphql.Null
 	}
-	res := resTmp.(bool)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _HealthInfo_DatabaseConnection(ctx context.Context, field graphql.CollectedField, obj *model1.HealthInfo) (ret graphql.Marshaler) {
@@ -630,13 +708,68 @@ func (ec *executionContext) _HealthInfo_DatabaseConnection(ctx context.Context, 
 		Object:   "HealthInfo",
 		Field:    field,
 		Args:     nil,
-		IsMethod: false,
+		IsMethod: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp := ec._fieldMiddleware(ctx, obj, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.DatabaseConnection, nil
+		return ec.resolvers.HealthInfo().DatabaseConnection(rctx, obj)
+	})
+
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_restart(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().Restart(rctx)
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			role, err := ec.unmarshalNRole2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋauthᚋmodelᚐRole(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
+			}
+			if ec.directives.HasRole == nil {
+				return nil, errors.New("directive hasRole is not implemented")
+			}
+			return ec.directives.HasRole(ctx, nil, directive0, role)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, err
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
 	})
 
 	if resTmp == nil {
@@ -665,10 +798,75 @@ func (ec *executionContext) _Mutation_update_profile(ctx context.Context, field 
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_update_profile_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdateProfile(rctx)
+			return ec.resolvers.Mutation().UpdateProfile(rctx, args["data"].(model1.UpdateAuth0Profile))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.IsAuthenticated == nil {
+				return nil, errors.New("directive isAuthenticated is not implemented")
+			}
+			return ec.directives.IsAuthenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, err
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(bool); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be bool`, tmp)
+	})
+
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_sync_events(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:   "Mutation",
+		Field:    field,
+		Args:     nil,
+		IsMethod: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_sync_events_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().SyncEvents(rctx, args["integration"].(integration.ServiceType))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.IsAuthenticated == nil {
@@ -766,10 +964,10 @@ func (ec *executionContext) _Query_get_profile(ctx context.Context, field graphq
 		if tmp == nil {
 			return nil, nil
 		}
-		if data, ok := tmp.(*model1.Auth0User); ok {
+		if data, ok := tmp.(*model1.Auth0Profile); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/temesxgn/se6367-backend/graph/model.Auth0User`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/temesxgn/se6367-backend/graph/model.Auth0Profile`, tmp)
 	})
 
 	if resTmp == nil {
@@ -778,9 +976,9 @@ func (ec *executionContext) _Query_get_profile(ctx context.Context, field graphq
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*model1.Auth0User)
+	res := resTmp.(*model1.Auth0Profile)
 	fc.Result = res
-	return ec.marshalNAuth0User2ᚖgithubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐAuth0User(ctx, field.Selections, res)
+	return ec.marshalNAuth0Profile2ᚖgithubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐAuth0Profile(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -867,11 +1065,14 @@ func (ec *executionContext) _UserIdentity_connection(ctx context.Context, field 
 	})
 
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _UserIdentity_user_id(ctx context.Context, field graphql.CollectedField, obj *model1.UserIdentity) (ret graphql.Marshaler) {
@@ -895,11 +1096,14 @@ func (ec *executionContext) _UserIdentity_user_id(ctx context.Context, field gra
 	})
 
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _UserIdentity_provider(ctx context.Context, field graphql.CollectedField, obj *model1.UserIdentity) (ret graphql.Marshaler) {
@@ -923,11 +1127,14 @@ func (ec *executionContext) _UserIdentity_provider(ctx context.Context, field gr
 	})
 
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _UserIdentity_is_social(ctx context.Context, field graphql.CollectedField, obj *model1.UserIdentity) (ret graphql.Marshaler) {
@@ -951,11 +1158,14 @@ func (ec *executionContext) _UserIdentity_is_social(ctx context.Context, field g
 	})
 
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(*bool)
 	fc.Result = res
-	return ec.marshalOBoolean2ᚖbool(ctx, field.Selections, res)
+	return ec.marshalNBoolean2ᚖbool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _UserIdentity_access_token(ctx context.Context, field graphql.CollectedField, obj *model1.UserIdentity) (ret graphql.Marshaler) {
@@ -1945,6 +2155,36 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputUpdateAuth0Profile(ctx context.Context, obj interface{}) (model1.UpdateAuth0Profile, error) {
+	var it model1.UpdateAuth0Profile
+	var asMap = obj.(map[string]interface{})
+
+	for k, v := range asMap {
+		switch k {
+		case "Nickname":
+			var err error
+			it.Nickname, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "user_metadata":
+			var err error
+			it.UserMetadata, err = ec.unmarshalOMap2map(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "picture":
+			var err error
+			it.Picture, err = ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -1953,29 +2193,29 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** object.gotpl ****************************
 
-var auth0UserImplementors = []string{"Auth0User"}
+var auth0ProfileImplementors = []string{"Auth0Profile"}
 
-func (ec *executionContext) _Auth0User(ctx context.Context, sel ast.SelectionSet, obj *model1.Auth0User) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, auth0UserImplementors)
+func (ec *executionContext) _Auth0Profile(ctx context.Context, sel ast.SelectionSet, obj *model1.Auth0Profile) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, auth0ProfileImplementors)
 
 	out := graphql.NewFieldSet(fields)
 	var invalids uint32
 	for i, field := range fields {
 		switch field.Name {
 		case "__typename":
-			out.Values[i] = graphql.MarshalString("Auth0User")
+			out.Values[i] = graphql.MarshalString("Auth0Profile")
 		case "Nickname":
-			out.Values[i] = ec._Auth0User_Nickname(ctx, field, obj)
-		case "PHoneNumber":
-			out.Values[i] = ec._Auth0User_PHoneNumber(ctx, field, obj)
+			out.Values[i] = ec._Auth0Profile_Nickname(ctx, field, obj)
+		case "PhoneNumber":
+			out.Values[i] = ec._Auth0Profile_PhoneNumber(ctx, field, obj)
 		case "user_metadata":
-			out.Values[i] = ec._Auth0User_user_metadata(ctx, field, obj)
+			out.Values[i] = ec._Auth0Profile_user_metadata(ctx, field, obj)
 		case "app_metadata":
-			out.Values[i] = ec._Auth0User_app_metadata(ctx, field, obj)
+			out.Values[i] = ec._Auth0Profile_app_metadata(ctx, field, obj)
 		case "picture":
-			out.Values[i] = ec._Auth0User_picture(ctx, field, obj)
+			out.Values[i] = ec._Auth0Profile_picture(ctx, field, obj)
 		case "identities":
-			out.Values[i] = ec._Auth0User_identities(ctx, field, obj)
+			out.Values[i] = ec._Auth0Profile_identities(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2002,15 +2242,33 @@ func (ec *executionContext) _HealthInfo(ctx context.Context, sel ast.SelectionSe
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("HealthInfo")
 		case "Auth0Connection":
-			out.Values[i] = ec._HealthInfo_Auth0Connection(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._HealthInfo_Auth0Connection(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		case "DatabaseConnection":
-			out.Values[i] = ec._HealthInfo_DatabaseConnection(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._HealthInfo_DatabaseConnection(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2037,8 +2295,18 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "restart":
+			out.Values[i] = ec._Mutation_restart(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "update_profile":
 			out.Values[i] = ec._Mutation_update_profile(ctx, field)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "sync_events":
+			out.Values[i] = ec._Mutation_sync_events(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -2124,12 +2392,24 @@ func (ec *executionContext) _UserIdentity(ctx context.Context, sel ast.Selection
 			out.Values[i] = graphql.MarshalString("UserIdentity")
 		case "connection":
 			out.Values[i] = ec._UserIdentity_connection(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "user_id":
 			out.Values[i] = ec._UserIdentity_user_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "provider":
 			out.Values[i] = ec._UserIdentity_provider(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "is_social":
 			out.Values[i] = ec._UserIdentity_is_social(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "access_token":
 			out.Values[i] = ec._UserIdentity_access_token(ctx, field, obj)
 		default:
@@ -2388,18 +2668,18 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAuth0User2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐAuth0User(ctx context.Context, sel ast.SelectionSet, v model1.Auth0User) graphql.Marshaler {
-	return ec._Auth0User(ctx, sel, &v)
+func (ec *executionContext) marshalNAuth0Profile2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐAuth0Profile(ctx context.Context, sel ast.SelectionSet, v model1.Auth0Profile) graphql.Marshaler {
+	return ec._Auth0Profile(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNAuth0User2ᚖgithubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐAuth0User(ctx context.Context, sel ast.SelectionSet, v *model1.Auth0User) graphql.Marshaler {
+func (ec *executionContext) marshalNAuth0Profile2ᚖgithubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐAuth0Profile(ctx context.Context, sel ast.SelectionSet, v *model1.Auth0Profile) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
 		}
 		return graphql.Null
 	}
-	return ec._Auth0User(ctx, sel, v)
+	return ec._Auth0Profile(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
@@ -2416,6 +2696,24 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNBoolean2ᚖbool(ctx context.Context, v interface{}) (*bool, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNBoolean2bool(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalNBoolean2ᚖbool(ctx context.Context, sel ast.SelectionSet, v *bool) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec.marshalNBoolean2bool(ctx, sel, *v)
+}
+
 func (ec *executionContext) marshalNHealthInfo2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐHealthInfo(ctx context.Context, sel ast.SelectionSet, v model1.HealthInfo) graphql.Marshaler {
 	return ec._HealthInfo(ctx, sel, &v)
 }
@@ -2428,6 +2726,21 @@ func (ec *executionContext) marshalNHealthInfo2ᚖgithubᚗcomᚋtemesxgnᚋse63
 		return graphql.Null
 	}
 	return ec._HealthInfo(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNIntegrationType2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋintegrationᚐServiceType(ctx context.Context, v interface{}) (integration.ServiceType, error) {
+	tmp, err := graphql.UnmarshalString(v)
+	return integration.ServiceType(tmp), err
+}
+
+func (ec *executionContext) marshalNIntegrationType2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋintegrationᚐServiceType(ctx context.Context, sel ast.SelectionSet, v integration.ServiceType) graphql.Marshaler {
+	res := graphql.MarshalString(string(v))
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNRole2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋauthᚋmodelᚐRole(ctx context.Context, v interface{}) (model.Role, error) {
@@ -2453,7 +2766,33 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNUserIdentity2ᚕᚖgithubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐUserIdentity(ctx context.Context, sel ast.SelectionSet, v []*model1.UserIdentity) graphql.Marshaler {
+func (ec *executionContext) unmarshalNString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalNString2string(ctx, v)
+	return &res, err
+}
+
+func (ec *executionContext) marshalNString2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec.marshalNString2string(ctx, sel, *v)
+}
+
+func (ec *executionContext) unmarshalNUpdateAuth0Profile2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐUpdateAuth0Profile(ctx context.Context, v interface{}) (model1.UpdateAuth0Profile, error) {
+	return ec.unmarshalInputUpdateAuth0Profile(ctx, v)
+}
+
+func (ec *executionContext) marshalNUserIdentity2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐUserIdentity(ctx context.Context, sel ast.SelectionSet, v model1.UserIdentity) graphql.Marshaler {
+	return ec._UserIdentity(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUserIdentity2ᚕᚖgithubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐUserIdentityᚄ(ctx context.Context, sel ast.SelectionSet, v []*model1.UserIdentity) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -2477,7 +2816,7 @@ func (ec *executionContext) marshalNUserIdentity2ᚕᚖgithubᚗcomᚋtemesxgn�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOUserIdentity2ᚖgithubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐUserIdentity(ctx, sel, v[i])
+			ret[i] = ec.marshalNUserIdentity2ᚖgithubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐUserIdentity(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -2488,6 +2827,16 @@ func (ec *executionContext) marshalNUserIdentity2ᚕᚖgithubᚗcomᚋtemesxgn�
 	}
 	wg.Wait()
 	return ret
+}
+
+func (ec *executionContext) marshalNUserIdentity2ᚖgithubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐUserIdentity(ctx context.Context, sel ast.SelectionSet, v *model1.UserIdentity) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	return ec._UserIdentity(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -2774,17 +3123,6 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	return ec.marshalOString2string(ctx, sel, *v)
-}
-
-func (ec *executionContext) marshalOUserIdentity2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐUserIdentity(ctx context.Context, sel ast.SelectionSet, v model1.UserIdentity) graphql.Marshaler {
-	return ec._UserIdentity(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalOUserIdentity2ᚖgithubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋgraphᚋmodelᚐUserIdentity(ctx context.Context, sel ast.SelectionSet, v *model1.UserIdentity) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return ec._UserIdentity(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

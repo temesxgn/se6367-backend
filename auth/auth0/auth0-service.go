@@ -69,7 +69,7 @@ func (s *auth0Service) GetToken() (string, error) {
 	return data.AccessToken, nil
 }
 
-func (s *auth0Service) GetUser(userID string) (*model.Auth0User, error) {
+func (s *auth0Service) GetUser(userID string) (*model.Auth0Profile, error) {
 	token, err := s.GetToken()
 	if err != nil {
 		fmt.Print("ERROR GETTING TOKEN " + err.Error())
@@ -90,7 +90,7 @@ func (s *auth0Service) GetUser(userID string) (*model.Auth0User, error) {
 		return nil, errors.Wrap(err, "reading body")
 	}
 
-	var user model.Auth0User
+	var user model.Auth0Profile
 	if err := jsonutils.Unmarshal(buf.String(), &user); err != nil {
 		return nil, err
 	}

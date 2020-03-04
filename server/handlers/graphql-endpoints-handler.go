@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/99designs/gqlgen/graphql"
@@ -19,6 +20,7 @@ func GraphqlHandler(c echo.Context) error {
 	cfg := generated.Config{Resolvers: &graph.Resolver{}}
 	cfg.Directives.HasRole = hasRoleHandler(c)
 	cfg.Directives.IsAuthenticated = isAuthenticatedHandler(c)
+	cfg.Directives.HasIntegration = hasIntegration(c)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(cfg))
 	req := c.Request()
@@ -59,5 +61,14 @@ func isAuthenticatedHandler(c echo.Context) func(ctx context.Context, obj interf
 		}
 
 		return nil, fmt.Errorf("access denied: must be authenticated")
+	}
+}
+
+func hasIntegration(c echo.Context) func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error) {
+	return func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error) {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(c.Request().Body)
+		fmt.Println(fmt.Sprintf("OBJECT: %v", buf.String()))
+		return next(ctx)
 	}
 }

@@ -1,9 +1,12 @@
 package model
 
-import "time"
+import (
+	"gopkg.in/auth0.v3"
+	"strings"
+	"time"
+)
 
-type Auth0User struct {
-
+type Auth0Profile struct {
 	// The users identifier.
 	ID *string `json:"user_id,omitempty"`
 
@@ -77,6 +80,16 @@ type Auth0User struct {
 
 	// True if the user is blocked from the application, false if the user is enabled
 	Blocked *bool `json:"blocked,omitempty"`
+}
+
+func (u *Auth0Profile) GetIdentityProviderAccessToken(provider string) string {
+	for _, uid := range u.Identities {
+		if strings.EqualFold(auth0.StringValue(uid.Provider), provider) {
+			return auth0.StringValue(uid.AccessToken)
+		}
+	}
+
+	return ""
 }
 
 type UserIdentity struct {

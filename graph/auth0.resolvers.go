@@ -8,15 +8,14 @@ import (
 
 	"github.com/temesxgn/se6367-backend/auth"
 	ctx2 "github.com/temesxgn/se6367-backend/auth/ctx"
-	"github.com/temesxgn/se6367-backend/graph/generated"
 	"github.com/temesxgn/se6367-backend/graph/model"
 )
 
-func (r *mutationResolver) UpdateProfile(ctx context.Context) (bool, error) {
+func (r *mutationResolver) UpdateProfile(ctx context.Context, data model.UpdateAuth0Profile) (bool, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) GetProfile(ctx context.Context) (*model.Auth0User, error) {
+func (r *queryResolver) GetProfile(ctx context.Context) (*model.Auth0Profile, error) {
 	user := ctx2.GetUser(ctx)
 	service, err := auth.GetAuthService(auth.AuthZeroAuthServiceType)
 	if err != nil {
@@ -45,7 +44,7 @@ func (r *queryResolver) GetProfile(ctx context.Context) (*model.Auth0User, error
 
 	fmt.Println(usr.Email)
 
-	return &model.Auth0User{
+	return &model.Auth0Profile{
 		Email:        usr.Email,
 		Nickname:     usr.Nickname,
 		PhoneNumber:  usr.PhoneNumber,
@@ -55,7 +54,3 @@ func (r *queryResolver) GetProfile(ctx context.Context) (*model.Auth0User, error
 		Identities:   ids,
 	}, nil
 }
-
-func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
-
-type mutationResolver struct{ *Resolver }

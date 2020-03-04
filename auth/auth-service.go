@@ -7,7 +7,7 @@ import (
 
 type Service interface {
 	GetToken() (string, error)
-	GetUser(userID string) (*model.Auth0User, error)
+	GetUser(userID string) (*model.Auth0Profile, error)
 	CreateUser(connection, email string) error
 }
 

@@ -1,6 +1,6 @@
 type Auth0Profile {
     Nickname: String
-    PHoneNumber: String
+    PhoneNumber: String
     user_metadata: Map
     app_metadata: Map
     picture: String

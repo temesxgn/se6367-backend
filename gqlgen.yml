@@ -47,10 +47,12 @@ models:
     model: github.com/temesxgn/se6367-backend/graph/scalar.MapScalar
   Timestamp:
     model: github.com/temesxgn/se6367-backend/graph/scalar.TimestampScalar
-  Auth0User:
-    model: github.com/temesxgn/se6367-backend/graph/model.Auth0User
+  Auth0Profile:
+    model: github.com/temesxgn/se6367-backend/graph/model.Auth0Profile
   Role:
     model: github.com/temesxgn/se6367-backend/auth/model.Role
+  IntegrationType:
+    model: github.com/temesxgn/se6367-backend/integration.ServiceType
   ID:
     model:
       - github.com/99designs/gqlgen/graphql.ID
