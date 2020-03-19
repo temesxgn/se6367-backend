@@ -23,7 +23,7 @@ var AllRole = []Role{
 	RoleUnauthenticated,
 }
 
-// GetRoleFromValue - returns the role type for the given value
+// GetRoleFromValue - returns the role integrationtype for the given value
 // If not a valid role, anonymous will be sent as default
 func GetRoleFromValue(role string) Role {
 	r := Role(role)

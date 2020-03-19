@@ -4,41 +4,57 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/temesxgn/se6367-backend/auth"
+	"github.com/temesxgn/se6367-backend/event"
 
-	ctx2 "github.com/temesxgn/se6367-backend/auth/ctx"
-	integration2 "github.com/temesxgn/se6367-backend/integration"
+	"github.com/temesxgn/se6367-backend/auth"
+	authCtx "github.com/temesxgn/se6367-backend/auth/ctx"
+	integrationService "github.com/temesxgn/se6367-backend/integration"
+	"github.com/temesxgn/se6367-backend/integration/integrationtype"
 )
 
-func (r *mutationResolver) SyncEvents(ctx context.Context, integration integration2.ServiceType) (bool, error) {
-	user := ctx2.GetUser(ctx)
+func (r *mutationResolver) SyncEvents(ctx context.Context, integration integrationtype.ServiceType) (bool, error) {
+	user := authCtx.GetUser(ctx)
 	authService, err := auth.GetAuthService(auth.AuthZeroAuthServiceType)
 	if err != nil {
-		fmt.Println(err.Error())
-		return false, nil
+		return false, errors.New(fmt.Sprintf("Error getting auth service. Cause: %v", err.Error()))
 	}
 
 	usr, err := authService.GetUser(user.UserID())
 	if err != nil {
-		fmt.Println(err.Error())
-		return false, nil
+		return false, errors.New(fmt.Sprintf("Error getting auth user. Cause: %v", err.Error()))
 	}
 
-	svc, err := integration2.GetCalendarIntegrationService(usr.GetIdentityProviderAccessToken(integration.String()), integration)
+	accessToken, refreshToken := usr.GetIdentityProviderTokens(integration)
+	svc, err := integrationService.GetCalendarIntegrationService(accessToken, refreshToken, integration)
 	if err != nil {
-		fmt.Println(err.Error())
-		return false, nil
+		return false, errors.New(fmt.Sprintf("Error getting calendar integration service. Cause: %v", err.Error()))
 	}
 
 	cals, err := svc.GetCalendars()
 	if err != nil {
-		fmt.Println(err.Error())
-		return false, nil
+		return false, errors.New(fmt.Sprintf("Error getting calendars. Cause: %v", err.Error()))
+	}
+
+	eventService, err := event.GetEventService(event.HasuraEventServiceType)
+	if err != nil {
+		fmt.Println(fmt.Sprintf("Error getting event service. Cause: %v", err.Error()))
+		return false, err
 	}
 
 	for _, cal := range cals {
-		fmt.Println(cal.Id)
+		events, err := svc.GetCalendarEvents(cal.Id)
+		if err != nil {
+			fmt.Println(fmt.Sprintf("Error getting calendar %v events. Cause: %v", cal.Id, err.Error()))
+			continue
+		}
+
+		for _, e := range events {
+			if err := eventService.CreateEvent(ctx, e); err != nil {
+				fmt.Println(fmt.Sprintf("Failed creating event %v", err.Error()))
+			}
+		}
 	}
 
 	return true, nil

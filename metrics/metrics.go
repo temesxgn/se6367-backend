@@ -17,7 +17,7 @@ const (
 const (
 	Mode            = "mode"
 	AppName         = "app.name"
-	TransactionType = "txn.type"
+	TransactionType = "txn.integrationtype"
 	Request         = "request"
 	Response        = "response"
 	EventID         = "event.id"

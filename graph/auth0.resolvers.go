@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/temesxgn/se6367-backend/auth"
-	ctx2 "github.com/temesxgn/se6367-backend/auth/ctx"
+	authCtx "github.com/temesxgn/se6367-backend/auth/ctx"
 	"github.com/temesxgn/se6367-backend/graph/model"
 )
 
@@ -16,16 +16,14 @@ func (r *mutationResolver) UpdateProfile(ctx context.Context, data model.UpdateA
 }
 
 func (r *queryResolver) GetProfile(ctx context.Context) (*model.Auth0Profile, error) {
-	user := ctx2.GetUser(ctx)
+	user := authCtx.GetUser(ctx)
 	service, err := auth.GetAuthService(auth.AuthZeroAuthServiceType)
 	if err != nil {
-		fmt.Println("Error getting authentication service " + err.Error())
 		return nil, err
 	}
 
 	usr, err := service.GetUser(user.UserID())
 	if err != nil {
-		fmt.Println("ERROR GETTING USER " + user.UserID() + "FROM AUTH0: " + err.Error())
 		return nil, err
 	}
 
@@ -41,8 +39,6 @@ func (r *queryResolver) GetProfile(ctx context.Context) (*model.Auth0Profile, er
 
 		ids = append(ids, id)
 	}
-
-	fmt.Println(usr.Email)
 
 	return &model.Auth0Profile{
 		Email:        usr.Email,

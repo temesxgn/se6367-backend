@@ -1,35 +1,42 @@
 package google
 
 import (
+	"errors"
+	"fmt"
 	"github.com/temesxgn/se6367-backend/common/models"
+	"github.com/temesxgn/se6367-backend/integration/integrationtype"
 	"google.golang.org/api/calendar/v3"
+	"time"
 )
 
 
 // MapToInternalCalendar - maps google calendar model to our internal model
-func MapToInternalCalendar(cal *calendar.Calendar) *models.Calendar {
-	return &models.Calendar{Id: cal.Id}
+func MapToInternalCalendar(cal *calendar.CalendarListEntry) *models.Calendar {
+	return &models.Calendar{
+		Id:          cal.Id,
+		Name:        cal.Summary,
+		Color:       cal.BackgroundColor,
+		Integration: integrationtype.GoogleServiceType,
+	}
 }
 
-func MapToInternalCalendarList(gCalList *calendar.CalendarList) []*models.Calendar {
+func MapToInternalCalendars(gCalList *calendar.CalendarList) []*models.Calendar {
 	cals := make([]*models.Calendar, 0)
-
 	for _, gCal := range gCalList.Items {
-		cal := &models.Calendar{Id: gCal.Id}
+		cal := MapToInternalCalendar(gCal)
 		cals = append(cals, cal)
 	}
 
 	return cals
 }
 
-func MapToInternalEvents(eventsList *calendar.Events) []*models.Event {
+func MapToInternalEvents(calID string, eventsList *calendar.Events) []*models.Event {
 	events := make([]*models.Event, 0)
-
 	for _, e := range eventsList.Items {
-		event := &models.Event{
-			ID:          e.Id,
-			Title:      e.Summary,
-			Description: e.Description,
+		event, err := MapToInternalEvent(calID, e)
+		if err != nil {
+			fmt.Println(fmt.Sprintf("Skipping event %s, Cause: %s", e.Id, err.Error()))
+			continue
 		}
 
 		events = append(events, event)
@@ -38,10 +45,46 @@ func MapToInternalEvents(eventsList *calendar.Events) []*models.Event {
 	return events
 }
 
-func MapToInternalEvent(event *calendar.Event) *models.Event {
-	return &models.Event{
-		ID:          event.Id,
-		Title:       event.Summary,
-		Description: event.Description,
+func MapToInternalEvent(calID string, e *calendar.Event) (*models.Event, error) {
+	if e.Start.DateTime != "" && e.End.DateTime != "" {
+		start, err := time.Parse(time.RFC3339, e.Start.DateTime)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("Error parsing start time for %v. Cause: %v", e.Id, err.Error()))
+		}
+
+		end, err := time.Parse(time.RFC3339, e.End.DateTime)
+		if err != nil {
+			return nil, errors.New(fmt.Sprintf("Error parsing end time for %v. Cause: %v", e.Id, err.Error()))
+		}
+
+		return &models.Event{
+			ID:          e.Id,
+			CalendarID: calID,
+			Title:      e.Summary,
+			Start: start,
+			End: end,
+			Description: e.Description,
+		}, nil
 	}
+
+	start, err := time.Parse(time.RFC3339, e.Start.Date)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Error parsing start time for %v. Cause: %v", e.Id, err.Error()))
+	}
+
+	end, err := time.Parse(time.RFC3339, e.End.Date)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("Error parsing end time for %v. Cause: %v", e.Id, err.Error()))
+	}
+
+	return &models.Event{
+		ID:          e.Id,
+		CalendarID: calID,
+		Title:      e.Summary,
+		Start: start,
+		End: end,
+		Description: e.Description,
+	}, nil
+
+
 }

@@ -14,7 +14,7 @@ import (
 // GetMyEventsForTodayIntent -
 func GetMyEventsForTodayIntentHandler(user *model.User) (alexa.Response, error) {
 	var builder ala.SSMLBuilder
-	service := event.GetEventService(event.HasuraEventServiceType)
+	service, _ := event.GetEventService(event.HasuraEventServiceType)
 	events, _ := service.GetEvents(context.Background(), &models2.EventFilterParams{
 		UserID: auth0.String(user.Sub),
 	})

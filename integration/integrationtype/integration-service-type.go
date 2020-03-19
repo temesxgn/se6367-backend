@@ -1,9 +1,9 @@
-package integration
+package integrationtype
 
 type ServiceType string
 
 const (
-	GoogleServiceType ServiceType = "google"
+	GoogleServiceType ServiceType = "GOOGLE"
 )
 
 func (s ServiceType) String() string {

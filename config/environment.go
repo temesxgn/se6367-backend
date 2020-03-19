@@ -89,3 +89,11 @@ func GetSendGridSecret() string {
 func GetNoReplyEmail() string {
 	return GetValue(NoReplyEmail, "")
 }
+
+func GetGoogleClientID() string {
+	return GetValue(GoogleClientID,"")
+}
+
+func GetGoogleClientSecret() string {
+	return GetValue(GoogleClientSecret, "")
+}

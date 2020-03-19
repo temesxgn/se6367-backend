@@ -5,8 +5,11 @@ import "time"
 // Event - event model object
 type Event struct {
 	ID          string    `json:"id"`
+	CalendarID  string    `json:"calendar_id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
+	Start       time.Time `json:"start"`
+	End       time.Time `json:"end"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

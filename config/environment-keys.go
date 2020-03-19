@@ -14,4 +14,6 @@ const (
 	Auth0APIID           = "AUTH0_API_ID"
 	SendGridSecret           = "SEND_GRID_SECRET"
 	NoReplyEmail             = "NO_REPLY_EMAIL"
+	GoogleClientID = "GOOGLE_CLIENT_ID"
+	GoogleClientSecret = "GOOGLE_CLIENT_SECRET"
 )

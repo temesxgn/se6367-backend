@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// OperationErrorType - the error type
+// OperationErrorType - the error integrationtype
 type OperationErrorType int8
 
 // Error types
@@ -22,7 +22,7 @@ const (
 	PaymentError
 )
 
-// Name - returns the name of the error type
+// Name - returns the name of the error integrationtype
 func (oe OperationErrorType) Name() string {
 	names := [...]string{
 		"APIError",

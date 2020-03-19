@@ -8,7 +8,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/labstack/echo"
-	ctx2 "github.com/temesxgn/se6367-backend/auth/ctx"
+	authCtx "github.com/temesxgn/se6367-backend/auth/ctx"
 	"github.com/temesxgn/se6367-backend/auth/middleware"
 	"github.com/temesxgn/se6367-backend/auth/model"
 	"github.com/temesxgn/se6367-backend/graph"
@@ -42,8 +42,8 @@ func PlaygroundHandler(c echo.Context) error {
 
 func hasRoleHandler(c echo.Context) func(ctx context.Context, obj interface{}, next graphql.Resolver, role model.Role) (res interface{}, err error) {
 	return func(ctx context.Context, obj interface{}, next graphql.Resolver, role model.Role) (interface{}, error) {
-		ctx = ctx2.SetValuesFromHeaders(c.Request())
-		user := ctx2.GetUser(ctx)
+		ctx = authCtx.SetValuesFromHeaders(c.Request())
+		user := authCtx.GetUser(ctx)
 		if middleware.HasAdminSecret(ctx) || user.IsValid() && user.HasRole(&role) {
 			return next(ctx)
 		}
@@ -54,8 +54,8 @@ func hasRoleHandler(c echo.Context) func(ctx context.Context, obj interface{}, n
 
 func isAuthenticatedHandler(c echo.Context) func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error) {
 	return func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error) {
-		ctx = ctx2.SetValuesFromHeaders(c.Request())
-		user := ctx2.GetUser(ctx)
+		ctx = authCtx.SetValuesFromHeaders(c.Request())
+		user := authCtx.GetUser(ctx)
 		if middleware.HasAdminSecret(ctx) || user.IsValid() {
 			return next(ctx)
 		}

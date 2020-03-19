@@ -3,18 +3,21 @@ package hasura
 import (
 	"context"
 	"fmt"
-	"github.com/temesxgn/se6367-backend/auth/ctx"
+	authCtx "github.com/temesxgn/se6367-backend/auth/ctx"
 	"github.com/temesxgn/se6367-backend/common/client/graphql"
-	models2 "github.com/temesxgn/se6367-backend/common/models"
+	"github.com/temesxgn/se6367-backend/common/models"
 	"github.com/temesxgn/se6367-backend/config"
 	"sync"
-	"time"
 )
 
 var (
 	service *hasuraService
 	once    sync.Once
 )
+
+type hasuraService struct {
+	client *graphql.Client
+}
 
 func log(s string) {
 	fmt.Println("LOGGER: " + s)
@@ -23,7 +26,7 @@ func log(s string) {
 func initialize(endpoint string) {
 	once.Do(func() {
 		client := graphql.NewClient(endpoint, log)
-		client.AddDefaultHeader(ctx.AdminSecretCtxKey.String(), config.GetHasuraSecret())
+		client.AddDefaultHeader(authCtx.AdminSecretCtxKey.String(), config.GetHasuraSecret())
 		service = &hasuraService{
 			client,
 		}
@@ -35,13 +38,9 @@ func NewService(endpoint string) *hasuraService {
 	return service
 }
 
-type hasuraService struct {
-	client *graphql.Client
-}
-
 // GetEvents - retrieve list of events based on the given filter params
-func (h *hasuraService) GetEvents(ctx context.Context, filter *models2.EventFilterParams) ([]*models2.Event, error) {
-	var respData models2.GetEventsResponse
+func (h *hasuraService) GetEvents(ctx context.Context, filter *models.EventFilterParams) ([]*models.Event, error) {
+	var respData models.GetEventsResponse
 	req := graphql.NewRequest(`
 		query MyEventsToday($id: String!) {
 		  events(where: {account_id: { _eq: $id }}) {
@@ -63,7 +62,7 @@ func (h *hasuraService) GetEvents(ctx context.Context, filter *models2.EventFilt
 }
 
 // GetEvent - retrieve event with the given id
-func (h *hasuraService) GetEvent(ctx context.Context, id string) (models2.Event, error) {
+func (h *hasuraService) GetEvent(ctx context.Context, id string) (models.Event, error) {
 	//var respData model.GetEventResponse
 	//req := graphql.NewRequest(`
 	//	query MyQuery($id: String!) {
@@ -90,10 +89,33 @@ func (h *hasuraService) GetEvent(ctx context.Context, id string) (models2.Event,
 	panic("event not implemented")
 }
 
-func (h *hasuraService) CreateEvent(ctx context.Context, title string, time time.Time) error {
-	panic("event not implemented")
+func (h *hasuraService) CreateEvent(ctx context.Context, event *models.Event) error {
+	user := authCtx.GetUser(ctx)
+	var respData models.GetEventsResponse
+	req := graphql.NewRequest(`
+		mutation CreateEvent($title: String!, $account: String!, $description: String, $start: timestamptz!, $end: timestamptz!) {
+			insert_event(objects: { account_id: $account, title: $title, description: $description, from: $end, start: $start,  }) {
+			  returning {
+				id
+			  }
+			}
+	  	}
+	`)
+
+	req.Var("title", event.Title)
+	req.Var("start", event.Start)
+	req.Var("end", event.End)
+	req.Var("description", event.Description)
+	req.Var("account", user.Claims.XHasuraUserEmail)
+	err := h.client.Run(ctx, req, &respData)
+	if err != nil {
+		fmt.Println("ERROR creating event " + event.Title + " " + err.Error())
+		return err
+	}
+
+	return nil
 }
 
-func (h *hasuraService) DeleteEvent(ctx context.Context, title string, day time.Time) error {
+func (h *hasuraService) DeleteEvent(ctx context.Context, id string) error {
 	panic("event not implemented")
 }

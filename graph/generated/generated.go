@@ -15,7 +15,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/temesxgn/se6367-backend/auth/model"
 	model1 "github.com/temesxgn/se6367-backend/graph/model"
-	"github.com/temesxgn/se6367-backend/integration"
+	"github.com/temesxgn/se6367-backend/integration/integrationtype"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -66,7 +66,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		Restart       func(childComplexity int) int
-		SyncEvents    func(childComplexity int, integration integration.ServiceType) int
+		SyncEvents    func(childComplexity int, integration integrationtype.ServiceType) int
 		UpdateProfile func(childComplexity int, data model1.UpdateAuth0Profile) int
 	}
 
@@ -91,7 +91,7 @@ type HealthInfoResolver interface {
 type MutationResolver interface {
 	Restart(ctx context.Context) (bool, error)
 	UpdateProfile(ctx context.Context, data model1.UpdateAuth0Profile) (bool, error)
-	SyncEvents(ctx context.Context, integration integration.ServiceType) (bool, error)
+	SyncEvents(ctx context.Context, integration integrationtype.ServiceType) (bool, error)
 }
 type QueryResolver interface {
 	Health(ctx context.Context) (*model1.HealthInfo, error)
@@ -186,7 +186,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.SyncEvents(childComplexity, args["integration"].(integration.ServiceType)), true
+		return e.complexity.Mutation.SyncEvents(childComplexity, args["integration"].(integrationtype.ServiceType)), true
 
 	case "Mutation.update_profile":
 		if e.complexity.Mutation.UpdateProfile == nil {
@@ -398,9 +398,9 @@ func (ec *executionContext) dir_hasRole_args(ctx context.Context, rawArgs map[st
 func (ec *executionContext) field_Mutation_sync_events_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 integration.ServiceType
+	var arg0 integrationtype.ServiceType
 	if tmp, ok := rawArgs["integration"]; ok {
-		arg0, err = ec.unmarshalNIntegrationType2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋintegrationᚐServiceType(ctx, tmp)
+		arg0, err = ec.unmarshalNIntegrationType2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋintegrationᚋintegrationtypeᚐServiceType(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -866,7 +866,7 @@ func (ec *executionContext) _Mutation_sync_events(ctx context.Context, field gra
 	resTmp := ec._fieldMiddleware(ctx, nil, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().SyncEvents(rctx, args["integration"].(integration.ServiceType))
+			return ec.resolvers.Mutation().SyncEvents(rctx, args["integration"].(integrationtype.ServiceType))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.IsAuthenticated == nil {
@@ -2728,12 +2728,12 @@ func (ec *executionContext) marshalNHealthInfo2ᚖgithubᚗcomᚋtemesxgnᚋse63
 	return ec._HealthInfo(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNIntegrationType2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋintegrationᚐServiceType(ctx context.Context, v interface{}) (integration.ServiceType, error) {
+func (ec *executionContext) unmarshalNIntegrationType2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋintegrationᚋintegrationtypeᚐServiceType(ctx context.Context, v interface{}) (integrationtype.ServiceType, error) {
 	tmp, err := graphql.UnmarshalString(v)
-	return integration.ServiceType(tmp), err
+	return integrationtype.ServiceType(tmp), err
 }
 
-func (ec *executionContext) marshalNIntegrationType2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋintegrationᚐServiceType(ctx context.Context, sel ast.SelectionSet, v integration.ServiceType) graphql.Marshaler {
+func (ec *executionContext) marshalNIntegrationType2githubᚗcomᚋtemesxgnᚋse6367ᚑbackendᚋintegrationᚋintegrationtypeᚐServiceType(ctx context.Context, sel ast.SelectionSet, v integrationtype.ServiceType) graphql.Marshaler {
 	res := graphql.MarshalString(string(v))
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {

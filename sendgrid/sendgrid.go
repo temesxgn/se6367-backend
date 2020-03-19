@@ -1,7 +1,6 @@
 package sendgrid
 
 import (
-	"fmt"
 	"github.com/sendgrid/sendgrid-go"
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 	"github.com/temesxgn/se6367-backend/config"
@@ -22,14 +21,10 @@ func init() {
 }
 
 func sendEmail(message *mail.SGMailV3) error {
-	response, err := api.Send(message)
+	_, err := api.Send(message)
 	if err != nil {
 		return err
 	}
-
-	fmt.Println(response.StatusCode)
-	fmt.Println(response.Body)
-	fmt.Println(response.Headers)
 
 	return nil
 }

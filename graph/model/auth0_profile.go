@@ -1,6 +1,8 @@
 package model
 
 import (
+	"fmt"
+	"github.com/temesxgn/se6367-backend/integration/integrationtype"
 	"gopkg.in/auth0.v3"
 	"strings"
 	"time"
@@ -82,14 +84,27 @@ type Auth0Profile struct {
 	Blocked *bool `json:"blocked,omitempty"`
 }
 
-func (u *Auth0Profile) GetIdentityProviderAccessToken(provider string) string {
+func (u *Auth0Profile) GetIdentityProviderTokens(integration integrationtype.ServiceType) (string, string) {
+	provider := u.getIntegrationConnectionName(integration)
+	fmt.Println("Checking for provider: " + provider)
 	for _, uid := range u.Identities {
-		if strings.EqualFold(auth0.StringValue(uid.Provider), provider) {
-			return auth0.StringValue(uid.AccessToken)
+		fmt.Println("Comparing against " + auth0.StringValue(uid.Provider))
+		prvdr := auth0.StringValue(uid.Provider)
+		if strings.EqualFold(prvdr, provider) {
+			return auth0.StringValue(uid.AccessToken), auth0.StringValue(uid.RefreshToken)
 		}
 	}
 
-	return ""
+	return "", ""
+}
+
+func (u *Auth0Profile) getIntegrationConnectionName(serviceType integrationtype.ServiceType) string {
+	switch serviceType {
+	case integrationtype.GoogleServiceType:
+		return "google-oauth2"
+	default:
+		return ""
+	}
 }
 
 type UserIdentity struct {
@@ -98,4 +113,5 @@ type UserIdentity struct {
 	Provider   *string `json:"provider,omitempty"`
 	IsSocial   *bool   `json:"isSocial,omitempty"`
 	AccessToken *string `json:"access_token,omitempty"`
+	RefreshToken *string `json:"refresh_token,omitempty"`
 }

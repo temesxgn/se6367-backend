@@ -4,11 +4,22 @@ import (
 	"context"
 	"fmt"
 	"github.com/temesxgn/se6367-backend/common/models"
-	calendar "google.golang.org/api/calendar/v3"
+	"golang.org/x/oauth2"
+	"google.golang.org/api/calendar/v3"
+	"google.golang.org/api/option"
 )
 
-func NewService(token string) (*googleService, error) {
-	service, err := calendar.NewService(context.Background())
+func NewService(accessToken, refreshToken string) (*googleService, error) {
+	fmt.Println(fmt.Sprintf("ACCESS TOKEN: %v", accessToken))
+	fmt.Println(fmt.Sprintf("REFRESH TOKEN: %v", refreshToken))
+	tkn := &oauth2.Token{
+		AccessToken:  accessToken,
+		TokenType:    "Bearer",
+		RefreshToken: refreshToken,
+	}
+
+	tokenSource := oauth2.ReuseTokenSource(tkn, oauth2.StaticTokenSource(tkn))
+	service, err := calendar.NewService(context.Background(), option.WithTokenSource(tokenSource))
 	if err != nil {
 		fmt.Println("Error creating client for google: " + err.Error())
 		return nil, err
@@ -16,24 +27,22 @@ func NewService(token string) (*googleService, error) {
 
 	return &googleService{
 		service,
-		token,
 	}, nil
 }
 
 type googleService struct {
 	service *calendar.Service
-	token string
 }
 
 // GetCalendars - retrieve the list of users calendar
 func (s *googleService) GetCalendars() ([]*models.Calendar, error) {
 	calList, err := s.service.CalendarList.List().Do()
 	if err != nil {
-		fmt.Println("ERROR get calendars from google " + err.Error())
-		return nil, err
+		fmt.Println(fmt.Sprintf("ERROR get calendars from google %v", err.Error()))
+		return make([]*models.Calendar, 0), err
 	}
 
-	cals := MapToInternalCalendarList(calList)
+	cals := MapToInternalCalendars(calList)
 	return cals, nil
 }
 
@@ -41,9 +50,9 @@ func (s *googleService) GetCalendarEvents(calID string) ([]*models.Event, error)
 	eventList, err := s.service.Events.List(calID).Do()
 	if err != nil {
 		fmt.Println("ERROR getting calendar events for cal" + calID + " from google " + err.Error())
-		return nil, err
+		return make([]*models.Event, 0), err
 	}
 
-	events := MapToInternalEvents(eventList)
+	events := MapToInternalEvents(calID, eventList)
 	return events, nil
 }

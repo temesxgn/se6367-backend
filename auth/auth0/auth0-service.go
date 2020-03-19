@@ -28,7 +28,6 @@ func initialize() error {
 	once.Do(func() {
 		m, err := management.New(config.GetAuth0DomainName(), config.GetAuth0ClientID(), config.GetAuth0ClientSecret())
 		if err != nil {
-			fmt.Println("ERROR INIT auth0 management api: " + err.Error())
 			initErr = err
 			return
 		}
@@ -43,7 +42,6 @@ func initialize() error {
 
 func NewService() (*auth0Service, error) {
 	if err := initialize(); err != nil {
-		fmt.Println("ERROR init auth0 service: " + err.Error())
 		return nil, err
 	}
 
@@ -66,13 +64,13 @@ func (s *auth0Service) GetToken() (string, error) {
 	body, _ := ioutil.ReadAll(res.Body)
 	var data model2.Auth0ClientCredentialsTokenResponse
 	_ = jsonutils.Unmarshal(string(body), &data)
+
 	return data.AccessToken, nil
 }
 
 func (s *auth0Service) GetUser(userID string) (*model.Auth0Profile, error) {
 	token, err := s.GetToken()
 	if err != nil {
-		fmt.Print("ERROR GETTING TOKEN " + err.Error())
 		return nil, err
 	}
 
@@ -96,7 +94,6 @@ func (s *auth0Service) GetUser(userID string) (*model.Auth0Profile, error) {
 	}
 
 	return &user, nil
-
 }
 
 func (s *auth0Service) CreateUser(connection, email string) error {
