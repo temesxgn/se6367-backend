@@ -38,12 +38,12 @@ func (u *User) HasExpired() bool {
 
 // UserID - returns the user id
 func (u *User) UserID() string {
-	return u.Claims.XHasuraUserEmail
+	return u.Claims.XHasuraUserID
 }
 
-// UserID - returns the user id
+// UserEmail - returns the user email
 func (u *User) UserEmail() string {
-	return u.Claims.XHasuraUserID
+	return u.Claims.XHasuraUserEmail
 }
 
 // IsValid - validates the jwt token
