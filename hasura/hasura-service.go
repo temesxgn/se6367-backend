@@ -40,6 +40,7 @@ func NewService(endpoint string) *hasuraService {
 
 // GetEvents - retrieve list of events based on the given filter params
 func (h *hasuraService) GetEvents(ctx context.Context, filter *models.EventFilterParams) ([]*models.Event, error) {
+	fmt.Println(fmt.Sprintf("Getting events for filter: %v", filter))
 	var respData models.GetEventsResponse
 	req := graphql.NewRequest(`
 		query MyEventsToday($id: String!) {
