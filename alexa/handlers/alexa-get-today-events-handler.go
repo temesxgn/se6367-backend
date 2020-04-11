@@ -35,7 +35,7 @@ func GetMyEventsForTodayIntentHandler(user *model.User) (alexa.Response, error) 
 		builder.Pause("500")
 		for _, event := range events {
 
-			builder.Say(fmt.Sprintf("%s from %s to %s", event.Title, event.Start.Format(time.RFC3339), event.End.Format(time.RFC3339)))
+			builder.Say(fmt.Sprintf("%s from %s to %s", event.Title, event.Start.Format("3:04PM"), event.End.Format("3:04PM")))
 			builder.Pause("1000")
 		}
 	}
