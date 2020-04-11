@@ -38,6 +38,11 @@ func (u *User) HasExpired() bool {
 
 // UserID - returns the user id
 func (u *User) UserID() string {
+	return u.Claims.XHasuraUserEmail
+}
+
+// UserID - returns the user id
+func (u *User) UserEmail() string {
 	return u.Claims.XHasuraUserID
 }
 
