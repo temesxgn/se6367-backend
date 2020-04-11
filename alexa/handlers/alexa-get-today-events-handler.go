@@ -9,15 +9,22 @@ import (
 	models2 "github.com/temesxgn/se6367-backend/common/models"
 	"github.com/temesxgn/se6367-backend/event"
 	"gopkg.in/auth0.v3"
+	"time"
 )
 
 // GetMyEventsForTodayIntent -
 func GetMyEventsForTodayIntentHandler(user *model.User) (alexa.Response, error) {
 	var builder ala.SSMLBuilder
 	service, _ := event.GetEventService(event.HasuraEventServiceType)
-	events, _ := service.GetEvents(context.Background(), &models2.EventFilterParams{
+	y, m, d := time.Now().In(time.UTC).Date()
+	start := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
+	end := start.AddDate(0, 0, 1).Add(-1 * time.Second)
+	filter := &models2.EventFilterParams{
 		UserID: auth0.String(user.UserEmail()),
-	})
+		From:   &start,
+		To:     &end,
+	}
+	events, _ := service.GetEvents(context.Background(), filter)
 
 	if len(events) == 0 {
 		builder.Say("You have no events for today.")

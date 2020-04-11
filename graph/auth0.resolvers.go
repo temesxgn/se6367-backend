@@ -5,7 +5,6 @@ package graph
 import (
 	"context"
 	"fmt"
-
 	"github.com/temesxgn/se6367-backend/auth"
 	authCtx "github.com/temesxgn/se6367-backend/auth/ctx"
 	"github.com/temesxgn/se6367-backend/graph/model"

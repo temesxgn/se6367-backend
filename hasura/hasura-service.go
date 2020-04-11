@@ -9,6 +9,7 @@ import (
 	"github.com/temesxgn/se6367-backend/common/util/jsonutils"
 	"github.com/temesxgn/se6367-backend/config"
 	"sync"
+	"time"
 )
 
 var (
@@ -45,8 +46,8 @@ func (h *hasuraService) GetEvents(ctx context.Context, filter *models.EventFilte
 	fmt.Println(fmt.Sprintf("Getting events for filter: %v", d))
 	var respData models.GetEventsResponse
 	req := graphql.NewRequest(`
-		query MyEventsToday($id: String!) {
-		  events(where: {account_id: { _eq: $id }}) {
+		query MyEventsToday($id: String!, $start: timestamptz, $end: timestamptz) {
+		  events(where: { account_id: { _eq: $id }, start: { _gt: $start }, end: { _lte: $end }}) {
 			id
 			title
 		  }
@@ -54,7 +55,8 @@ func (h *hasuraService) GetEvents(ctx context.Context, filter *models.EventFilte
 	`)
 
 	req.Var("id", filter.UserID)
-	//req.Var("date", time.Now().Format("01-02-2006"))
+	req.Var("start", filter.From.Format(time.RFC3339))
+	req.Var("end", filter.To.Format(time.RFC3339))
 	err := h.client.Run(ctx, req, &respData)
 	if err != nil {
 		fmt.Println("ERROR " + err.Error())
