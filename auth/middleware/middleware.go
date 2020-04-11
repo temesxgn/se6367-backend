@@ -31,8 +31,9 @@ func AlexaMiddleware() echo.MiddlewareFunc {
 			if err != nil {
 				builder.Say("Error authenticating, please try again.")
 				builder.Pause("100")
-				builder.Say("If this issue continues please check your status on the alexa app")
+				builder.Say("If this issue continues please make sure your are logged in on the alexa app")
 				fmt.Println("ERROR getting user from token: " + err.Error())
+				fmt.Println("Token: " + fmt.Sprintf("Bearer %s", request.Session.User.AccessToken))
 				return c.JSON(http.StatusOK, ala.NewSSMLResponse("Authentication Error", builder.Build()))
 			}
 
@@ -98,4 +99,3 @@ func HasAdminSecret(context context.Context) bool {
 // 	}
 
 // }
-

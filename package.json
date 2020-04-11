@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "generate": "go run github.com/99designs/gqlgen -v",
-    "start": "go run server.go",
+    "start": "go run server/server.go",
     "generate:remove": "rm generated/generated_models.go; rm generated/generated_resolver.go",
     "generate:stripe": "openapi-to-graphql stripe.json",
     "build": "docker build -f Dockerfile -t se6367/backend-api .",
