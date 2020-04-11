@@ -16,7 +16,7 @@ func GetMyEventsForDayIntentHandler(request *alexa.Request, user *model.User) (a
 	var builder ala.SSMLBuilder
 	service, _ := event.GetEventService(event.HasuraEventServiceType)
 	events, _ := service.GetEvents(context.Background(), &models2.EventFilterParams{
-		UserID: auth0.String(user.Sub),
+		UserID: auth0.String(user.Claims.XHasuraUserEmail),
 	})
 
 	if len(events) == 0 {
