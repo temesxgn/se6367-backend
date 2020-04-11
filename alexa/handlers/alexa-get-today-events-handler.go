@@ -29,7 +29,7 @@ func GetMyEventsForTodayIntentHandler(user *model.User) (alexa.Response, error) 
 	if len(events) == 0 {
 		builder.Say("You have no events for today.")
 		builder.Pause("300")
-		builder.Say("To create an event, say Alexa, events manager create event")
+		builder.Say("To create an event, say Alexa, tia mo create event")
 	} else {
 		builder.Say("Here are your events for today")
 		builder.Pause("500")
