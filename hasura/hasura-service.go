@@ -50,6 +50,8 @@ func (h *hasuraService) GetEvents(ctx context.Context, filter *models.EventFilte
 		  events(where: { account_id: { _eq: $id }, start: { _gt: $start }, end: { _lte: $end }}) {
 			id
 			title
+			start
+			end
 		  }
 		}
 	`)
