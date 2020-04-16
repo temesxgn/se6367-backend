@@ -50,7 +50,7 @@ func AlexaMiddleware() echo.MiddlewareFunc {
 }
 
 func HasAdminSecret(context context.Context) bool {
-	if secret := context.Value(ctx.AdminSecretCtxKey); strings.EqualFold(secret.(string), config.GetHasuraSecret()) {
+	if secret := context.Value(ctx.AdminSecretCtxKey); secret != nil && strings.EqualFold(secret.(string), config.GetHasuraSecret()) {
 		return true
 	}
 

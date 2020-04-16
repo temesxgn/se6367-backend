@@ -9,6 +9,7 @@ type Service interface {
 	GetToken() (string, error)
 	GetUser(userID string) (*model.Auth0Profile, error)
 	CreateUser(connection, email string) error
+	UpdateProfile(userID string, data *model.UpdateAuth0Profile) error
 }
 
 func GetAuthService(aType ServiceType) (Service, error) {

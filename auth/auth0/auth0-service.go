@@ -96,6 +96,39 @@ func (s *auth0Service) GetUser(userID string) (*model.Auth0Profile, error) {
 	return &user, nil
 }
 
+func (s *auth0Service) UpdateProfile(userID string, data *model.UpdateAuth0Profile) error {
+	token, err := s.GetToken()
+	if err != nil {
+		return err
+	}
+
+	url := "https://fairbankz.auth0.com/api/v2/users/" + userID
+	bdy, _ := jsonutils.Marshal(data)
+	fmt.Println("Sending RQ: " + bdy)
+	req, _ := http.NewRequest("PATCH", url, bytes.NewBuffer([]byte(bdy)))
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("authorization", fmt.Sprintf("Bearer %v", token))
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+
+	defer res.Body.Close()
+	var buf bytes.Buffer
+	if _, err := io.Copy(&buf, res.Body); err != nil {
+		return errors.Wrap(err, "reading body")
+	}
+
+	var user model.Auth0Profile
+	fmt.Println("RS: " + buf.String())
+	if err := jsonutils.Unmarshal(buf.String(), &user); err != nil {
+		return err
+	}
+
+	fmt.Println(fmt.Sprintf("%v", user))
+	return nil
+}
+
 func (s *auth0Service) CreateUser(connection, email string) error {
 	usr := &management.User{
 		Connection: auth0.String(connection),

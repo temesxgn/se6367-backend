@@ -3,7 +3,7 @@
 package model
 
 type UpdateAuth0Profile struct {
-	Nickname     *string                `json:"Nickname"`
+	Nickname     *string                `json:"Nickname,omitempty"`
 	UserMetadata map[string]interface{} `json:"user_metadata"`
-	Picture      *string                `json:"picture"`
+	Picture      *string                `json:"picture,omitempty"`
 }

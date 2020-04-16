@@ -4,14 +4,23 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"github.com/temesxgn/se6367-backend/auth"
 	authCtx "github.com/temesxgn/se6367-backend/auth/ctx"
 	"github.com/temesxgn/se6367-backend/graph/model"
 )
 
 func (r *mutationResolver) UpdateProfile(ctx context.Context, data model.UpdateAuth0Profile) (bool, error) {
-	panic(fmt.Errorf("not implemented"))
+	user := authCtx.GetUser(ctx)
+	service, err := auth.GetAuthService(auth.AuthZeroAuthServiceType)
+	if err != nil {
+		return false, err
+	}
+
+	if err := service.UpdateProfile(user.UserID(), &data); err != nil {
+		return false, err
+	}
+
+	return true, nil
 }
 
 func (r *queryResolver) GetProfile(ctx context.Context) (*model.Auth0Profile, error) {

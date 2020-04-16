@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	service *hasuraService
-	once    sync.Once
+	svc  *service
+	once sync.Once
 )
 
-type hasuraService struct {
+type service struct {
 	client *graphql.Client
 }
 
@@ -29,19 +29,19 @@ func initialize(endpoint string) {
 	once.Do(func() {
 		client := graphql.NewClient(endpoint, log)
 		client.AddDefaultHeader(authCtx.AdminSecretCtxKey.String(), config.GetHasuraSecret())
-		service = &hasuraService{
+		svc = &service{
 			client,
 		}
 	})
 }
 
-func NewService(endpoint string) *hasuraService {
+func NewService(endpoint string) *service {
 	initialize(endpoint)
-	return service
+	return svc
 }
 
 // GetEvents - retrieve list of events based on the given filter params
-func (h *hasuraService) GetEvents(ctx context.Context, filter *models.EventFilterParams) ([]*models.Event, error) {
+func (h *service) GetEvents(ctx context.Context, filter *models.EventFilterParams) ([]*models.Event, error) {
 	d, _ := jsonutils.Marshal(filter)
 	fmt.Println(fmt.Sprintf("Getting events for filter: %v", d))
 	var respData models.GetEventsResponse
@@ -69,7 +69,7 @@ func (h *hasuraService) GetEvents(ctx context.Context, filter *models.EventFilte
 }
 
 // GetEvent - retrieve event with the given id
-func (h *hasuraService) GetEvent(ctx context.Context, id string) (models.Event, error) {
+func (h *service) GetEvent(ctx context.Context, id string) (models.Event, error) {
 	//var respData model.GetEventResponse
 	//req := graphql.NewRequest(`
 	//	query MyQuery($id: String!) {
@@ -96,7 +96,7 @@ func (h *hasuraService) GetEvent(ctx context.Context, id string) (models.Event, 
 	panic("event not implemented")
 }
 
-func (h *hasuraService) CreateEvent(ctx context.Context, event *models.Event) error {
+func (h *service) CreateEvent(ctx context.Context, event *models.Event) error {
 	user := authCtx.GetUser(ctx)
 	var respData models.GetEventsResponse
 	req := graphql.NewRequest(`
@@ -123,6 +123,6 @@ func (h *hasuraService) CreateEvent(ctx context.Context, event *models.Event) er
 	return nil
 }
 
-func (h *hasuraService) DeleteEvent(ctx context.Context, id string) error {
+func (h *service) DeleteEvent(ctx context.Context, id string) error {
 	panic("event not implemented")
 }
