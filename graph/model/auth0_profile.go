@@ -91,6 +91,7 @@ func (u *Auth0Profile) GetIdentityProviderTokens(integration integrationtype.Ser
 		fmt.Println("Comparing against " + auth0.StringValue(uid.Provider))
 		prvdr := auth0.StringValue(uid.Provider)
 		if strings.EqualFold(prvdr, provider) {
+			fmt.Println(fmt.Sprintf("FOund provider %v", uid.RefreshToken))
 			return auth0.StringValue(uid.AccessToken), auth0.StringValue(uid.RefreshToken)
 		}
 	}
@@ -108,10 +109,10 @@ func (u *Auth0Profile) getIntegrationConnectionName(serviceType integrationtype.
 }
 
 type UserIdentity struct {
-	Connection *string `json:"connection,omitempty"`
-	UserID     *string `json:"user_id,omitempty"`
-	Provider   *string `json:"provider,omitempty"`
-	IsSocial   *bool   `json:"isSocial,omitempty"`
-	AccessToken *string `json:"access_token,omitempty"`
+	Connection   *string `json:"connection,omitempty"`
+	UserID       *string `json:"user_id,omitempty"`
+	Provider     *string `json:"provider,omitempty"`
+	IsSocial     *bool   `json:"isSocial,omitempty"`
+	AccessToken  *string `json:"access_token,omitempty"`
 	RefreshToken *string `json:"refresh_token,omitempty"`
 }

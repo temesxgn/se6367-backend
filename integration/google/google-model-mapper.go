@@ -9,7 +9,6 @@ import (
 	"time"
 )
 
-
 // MapToInternalCalendar - maps google calendar model to our internal model
 func MapToInternalCalendar(cal *calendar.CalendarListEntry) *models.Calendar {
 	return &models.Calendar{
@@ -46,45 +45,23 @@ func MapToInternalEvents(calID string, eventsList *calendar.Events) []*models.Ev
 }
 
 func MapToInternalEvent(calID string, e *calendar.Event) (*models.Event, error) {
-	if e.Start.DateTime != "" && e.End.DateTime != "" {
-		start, err := time.Parse(time.RFC3339, e.Start.DateTime)
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf("Error parsing start time for %v. Cause: %v", e.Id, err.Error()))
-		}
-
-		end, err := time.Parse(time.RFC3339, e.End.DateTime)
-		if err != nil {
-			return nil, errors.New(fmt.Sprintf("Error parsing end time for %v. Cause: %v", e.Id, err.Error()))
-		}
-
-		return &models.Event{
-			ID:          e.Id,
-			CalendarID: calID,
-			Title:      e.Summary,
-			Start: start,
-			End: end,
-			Description: e.Description,
-		}, nil
-	}
-
-	start, err := time.Parse(time.RFC3339, e.Start.Date)
+	start, err := time.Parse(time.RFC3339, e.Start.DateTime)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Error parsing start time for %v. Cause: %v", e.Id, err.Error()))
 	}
 
-	end, err := time.Parse(time.RFC3339, e.End.Date)
+	end, err := time.Parse(time.RFC3339, e.End.DateTime)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("Error parsing end time for %v. Cause: %v", e.Id, err.Error()))
 	}
 
 	return &models.Event{
 		ID:          e.Id,
-		CalendarID: calID,
-		Title:      e.Summary,
-		Start: start,
-		End: end,
+		CalendarID:  calID,
+		Title:       e.Summary,
+		Start:       start,
+		End:         end,
 		Description: e.Description,
 	}, nil
-
 
 }

@@ -100,20 +100,30 @@ func (h *service) CreateEvent(ctx context.Context, event *models.Event) error {
 	user := authCtx.GetUser(ctx)
 	var respData models.GetEventsResponse
 	req := graphql.NewRequest(`
-		mutation CreateEvent($title: String!, $account: String!, $description: String, $start: timestamptz!, $end: timestamptz!) {
-			insert_event(objects: { account_id: $account, title: $title, description: $description, from: $end, start: $start,  }) {
+		mutation CreateEvent($id: String!, $title: String!, $description: String, $type: event_type_enum!, $start: timestamptz!, $end: timestamptz!) {
+			insert_event(
+			  objects: {
+				account_id: $id
+				title: $title
+				description: $description
+				type: $type
+				start: $start
+				end: $end
+			  }
+			) {
 			  returning {
 				id
 			  }
 			}
-	  	}
+		  }
 	`)
 
 	req.Var("title", event.Title)
 	req.Var("start", event.Start)
 	req.Var("end", event.End)
 	req.Var("description", event.Description)
-	req.Var("account", user.Claims.XHasuraUserEmail)
+	req.Var("type", "general")
+	req.Var("id", user.Claims.XHasuraUserEmail)
 	err := h.client.Run(ctx, req, &respData)
 	if err != nil {
 		fmt.Println("ERROR creating event " + event.Title + " " + err.Error())
