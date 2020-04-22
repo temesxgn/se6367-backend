@@ -49,7 +49,7 @@ func MapToInternalEvent(calID string, e *calendar.Event) (*models.Event, error) 
 		start, startErr := time.Parse(time.RFC3339, e.Start.DateTime)
 		end, endErr := time.Parse(time.RFC3339, e.End.DateTime)
 		if startErr != nil && endErr != nil {
-			return nil, errors.New(fmt.Sprintf("Error parsing start & end times for %v. Cause: %v %v", e.Id, startErr.Error(), endErr.Error()))
+			return nil, errors.New(fmt.Sprintf("Error parsing start & end datetimes for %v. Cause: %v %v", e.Id, startErr.Error(), endErr.Error()))
 		}
 
 		return &models.Event{
