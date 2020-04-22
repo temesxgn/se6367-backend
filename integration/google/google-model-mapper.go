@@ -45,23 +45,39 @@ func MapToInternalEvents(calID string, eventsList *calendar.Events) []*models.Ev
 }
 
 func MapToInternalEvent(calID string, e *calendar.Event) (*models.Event, error) {
-	start, err := time.Parse(time.RFC3339, e.Start.DateTime)
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Error parsing start time for %v. Cause: %v", e.Id, err.Error()))
+	if e.Start.DateTime != "" && e.End.DateTime != "" {
+		start, startErr := time.Parse(time.RFC3339, e.Start.DateTime)
+		end, endErr := time.Parse(time.RFC3339, e.End.DateTime)
+		if startErr != nil && endErr != nil {
+			return nil, errors.New(fmt.Sprintf("Error parsing start & end times for %v. Cause: %v %v", e.Id, startErr.Error(), endErr.Error()))
+		}
+
+		return &models.Event{
+			ID:          e.Id,
+			CalendarID:  calID,
+			Title:       e.Summary,
+			Start:       start,
+			End:         end,
+			Description: e.Description,
+		}, nil
 	}
 
-	end, err := time.Parse(time.RFC3339, e.End.DateTime)
-	if err != nil {
-		return nil, errors.New(fmt.Sprintf("Error parsing end time for %v. Cause: %v", e.Id, err.Error()))
+	if e.Start.Date != "" && e.End.Date != "" {
+		start, startErr := time.Parse(time.RFC3339, e.Start.Date)
+		end, endErr := time.Parse(time.RFC3339, e.End.Date)
+		if startErr != nil && endErr != nil {
+			return nil, errors.New(fmt.Sprintf("Error parsing start & end times for %v. Cause: %v %v", e.Id, startErr.Error(), endErr.Error()))
+		}
+
+		return &models.Event{
+			ID:          e.Id,
+			CalendarID:  calID,
+			Title:       e.Summary,
+			Start:       start,
+			End:         end,
+			Description: e.Description,
+		}, nil
 	}
 
-	return &models.Event{
-		ID:          e.Id,
-		CalendarID:  calID,
-		Title:       e.Summary,
-		Start:       start,
-		End:         end,
-		Description: e.Description,
-	}, nil
-
+	return nil, errors.New(fmt.Sprintf("Error parsing date for cal -> %v event -> %v (id: %v)"+calID, e.Summary, e.Id))
 }
