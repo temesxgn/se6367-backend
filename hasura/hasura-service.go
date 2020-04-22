@@ -100,7 +100,7 @@ func (h *service) CreateEvent(ctx context.Context, event *models.Event) error {
 	user := authCtx.GetUser(ctx)
 	var respData models.GetEventsResponse
 	req := graphql.NewRequest(`
-		mutation CreateEvent($id: String!, $title: String!, $description: String, $type: event_type_enum!, $start: timestamptz!, $end: timestamptz!, isAllDay: Boolean) {
+		mutation CreateEvent($id: String!, $title: String!, $description: String, $type: event_type_enum!, $start: timestamptz!, $end: timestamptz!, $isAllDay: Boolean) {
 			insert_event(
 			  objects: {
 				account_id: $id
