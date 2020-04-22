@@ -59,12 +59,13 @@ func MapToInternalEvent(calID string, e *calendar.Event) (*models.Event, error) 
 			Start:       start,
 			End:         end,
 			Description: e.Description,
+			IsAllDay:    false,
 		}, nil
 	}
 
 	if e.Start.Date != "" && e.End.Date != "" {
-		start, startErr := time.Parse(time.RFC3339, e.Start.Date)
-		end, endErr := time.Parse(time.RFC3339, e.End.Date)
+		start, startErr := time.Parse("2006-01-02", e.Start.Date)
+		end, endErr := time.Parse("2006-01-02", e.End.Date)
 		if startErr != nil && endErr != nil {
 			return nil, errors.New(fmt.Sprintf("Error parsing start & end times for %v. Cause: %v %v", e.Id, startErr.Error(), endErr.Error()))
 		}
@@ -76,6 +77,7 @@ func MapToInternalEvent(calID string, e *calendar.Event) (*models.Event, error) 
 			Start:       start,
 			End:         end,
 			Description: e.Description,
+			IsAllDay:    true,
 		}, nil
 	}
 

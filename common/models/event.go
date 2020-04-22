@@ -9,7 +9,8 @@ type Event struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Start       time.Time `json:"start"`
-	End       time.Time `json:"end"`
+	End         time.Time `json:"end"`
+	IsAllDay    bool      `json:"is_allDay"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }

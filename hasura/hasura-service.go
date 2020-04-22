@@ -100,7 +100,7 @@ func (h *service) CreateEvent(ctx context.Context, event *models.Event) error {
 	user := authCtx.GetUser(ctx)
 	var respData models.GetEventsResponse
 	req := graphql.NewRequest(`
-		mutation CreateEvent($id: String!, $title: String!, $description: String, $type: event_type_enum!, $start: timestamptz!, $end: timestamptz!) {
+		mutation CreateEvent($id: String!, $title: String!, $description: String, $type: event_type_enum!, $start: timestamptz!, $end: timestamptz!, isAllDay: Boolean) {
 			insert_event(
 			  objects: {
 				account_id: $id
@@ -109,6 +109,7 @@ func (h *service) CreateEvent(ctx context.Context, event *models.Event) error {
 				type: $type
 				start: $start
 				end: $end
+				is_allDay: $isAllDay
 			  }
 			) {
 			  returning {
@@ -124,6 +125,7 @@ func (h *service) CreateEvent(ctx context.Context, event *models.Event) error {
 	req.Var("description", event.Description)
 	req.Var("type", "general")
 	req.Var("id", user.Claims.XHasuraUserEmail)
+	req.Var("isAllDay", event.IsAllDay)
 	err := h.client.Run(ctx, req, &respData)
 	if err != nil {
 		fmt.Println("ERROR creating event " + event.Title + " " + err.Error())
