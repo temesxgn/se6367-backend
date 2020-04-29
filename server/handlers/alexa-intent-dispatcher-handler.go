@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"github.com/temesxgn/se6367-backend/alexa/handlers"
+	"github.com/temesxgn/se6367-backend/auth/ctx"
 	"github.com/temesxgn/se6367-backend/auth/model"
 	"net/http"
 
@@ -12,8 +13,8 @@ import (
 
 // AlexaIntentHandler - endpoint to handle requests from alexa
 func AlexaIntentHandler(c echo.Context) error {
-	request := c.Get("request").(*alexa.Request)
-	usr := c.Get("user").(*model.User)
+	request := ctx.GetAlexRequestFromContext(c)
+	usr := ctx.GetUserFromContext(c)
 
 	res, err := intentDispatcher(request, usr)
 	if err != nil {

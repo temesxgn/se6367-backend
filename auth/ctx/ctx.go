@@ -3,6 +3,7 @@ package ctx
 import (
 	"context"
 	"errors"
+	"github.com/arienmalec/alexa-go"
 	"github.com/temesxgn/se6367-backend/auth/model"
 	"gopkg.in/square/go-jose.v2/jwt"
 	"net/http"
@@ -59,6 +60,14 @@ func GetUser(ctx context.Context) *model.User {
 	}
 
 	return &model.User{}
+}
+
+func GetAlexRequestFromContext(c echo.Context) *alexa.Request {
+	return c.Get("request").(*alexa.Request)
+}
+
+func GetUserFromContext(c echo.Context) *model.User {
+	return c.Get("user").(*model.User)
 }
 
 func GetUserFromToken(token string) (*model.User, error) {

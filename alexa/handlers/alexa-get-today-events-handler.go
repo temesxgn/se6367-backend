@@ -6,48 +6,49 @@ import (
 	"github.com/arienmalec/alexa-go"
 	ala "github.com/temesxgn/se6367-backend/alexa"
 	"github.com/temesxgn/se6367-backend/auth/model"
-	models2 "github.com/temesxgn/se6367-backend/common/models"
+	filters "github.com/temesxgn/se6367-backend/common/models"
 	"github.com/temesxgn/se6367-backend/event"
 	"gopkg.in/auth0.v3"
 	"time"
 )
 
+const TimeFormat = "3:04PM"
+
 // GetMyEventsForTodayIntent -
 func GetMyEventsForTodayIntentHandler(user *model.User) (alexa.Response, error) {
 	var builder ala.SSMLBuilder
-	runTime := time.Now()
 	service, _ := event.GetEventService(event.HasuraEventServiceType)
+	runTime := time.Now()
 	y, m, d := time.Now().In(time.UTC).Date()
 	start := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 	end := start.AddDate(0, 0, 1).Add(-1 * time.Second)
-	filter := &models2.EventFilterParams{
+	filter := &filters.EventFilterParams{
 		UserID: auth0.String(user.UserEmail()),
 		From:   &start,
 		To:     &end,
 	}
-	events, _ := service.GetEvents(context.Background(), filter)
 
+	events, _ := service.GetEvents(context.Background(), filter)
 	if len(events) == 0 {
 		builder.Say("You have no events for today.")
 		builder.Pause("300")
-		builder.Say("To create an event, say Alexa, tia mo create event")
-	} else {
-		builder.Say("Here are your events for today")
-		builder.Pause("500")
-		for _, event := range events {
-			isPassed := event.End.Before(runTime)
-			if event.IsAllDay {
-				builder.Say(fmt.Sprintf("All day event"))
-				builder.Pause("500")
-				builder.Say(fmt.Sprintf("%s", event.Title))
-			} else if !isPassed {
-				builder.Say(fmt.Sprintf("%s from %s to %s", event.Title, event.Start.Format("3:04PM"), event.End.Format("3:04PM")))
-			} else {
-				fmt.Println(fmt.Sprintf("Skipping event %s from %s to %s", event.Title, event.Start.Format("3:04PM"), event.End.Format("3:04PM")))
-			}
+		builder.Say("To create an event, say Alexa, fair banks create event")
+		return ala.NewSSMLResponse("My Events Today", builder.Build()), nil
+	}
 
-			builder.Pause("1000")
+	builder.Say("Here are your events for today")
+	builder.Pause("500")
+	for _, e := range events {
+		isPassed := e.End.Before(runTime)
+		if e.IsAllDay {
+			builder.Say(fmt.Sprintf("All day event"))
+			builder.Pause("500")
+			builder.Say(fmt.Sprintf("%s", e.Title))
+		} else if !isPassed {
+			builder.Say(fmt.Sprintf("%s from %s to %s", e.Title, e.Start.Format(TimeFormat), e.End.Format(TimeFormat)))
 		}
+
+		builder.Pause("1000")
 	}
 
 	return ala.NewSSMLResponse("My Events Today", builder.Build()), nil
