@@ -42,6 +42,8 @@ func GetMyEventsForTodayIntentHandler(user *model.User) (alexa.Response, error) 
 				builder.Say(fmt.Sprintf("%s", event.Title))
 			} else if !isPassed {
 				builder.Say(fmt.Sprintf("%s from %s to %s", event.Title, event.Start.Format("3:04PM"), event.End.Format("3:04PM")))
+			} else {
+				fmt.Println(fmt.Sprintf("Skipping event %s from %s to %s", event.Title, event.Start.Format("3:04PM"), event.End.Format("3:04PM")))
 			}
 
 			builder.Pause("1000")

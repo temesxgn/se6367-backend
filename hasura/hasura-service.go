@@ -52,6 +52,7 @@ func (h *service) GetEvents(ctx context.Context, filter *models.EventFilterParam
 			title
 			start
 			end
+			is_allDay
 		  }
 		}
 	`)
