@@ -47,7 +47,7 @@ func (h *service) GetEvents(ctx context.Context, filter *models.EventFilterParam
 	var respData models.GetEventsResponse
 	req := graphql.NewRequest(`
 		query MyEventsToday($id: String!, $start: timestamptz, $end: timestamptz) {
-		  events(where: { account_id: { _eq: $id }, start: { _gt: $start }, end: { _lte: $end }}) {
+		  events(where: { account_id: { _eq: $id }, start: { _gt: $start }, end: { _lte: $end }}, order_by: { start: asc }) {
 			id
 			title
 			start

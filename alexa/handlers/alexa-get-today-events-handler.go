@@ -15,6 +15,7 @@ import (
 // GetMyEventsForTodayIntent -
 func GetMyEventsForTodayIntentHandler(user *model.User) (alexa.Response, error) {
 	var builder ala.SSMLBuilder
+	runTime := time.Now()
 	service, _ := event.GetEventService(event.HasuraEventServiceType)
 	y, m, d := time.Now().In(time.UTC).Date()
 	start := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
@@ -34,8 +35,15 @@ func GetMyEventsForTodayIntentHandler(user *model.User) (alexa.Response, error) 
 		builder.Say("Here are your events for today")
 		builder.Pause("500")
 		for _, event := range events {
+			isPassed := event.End.Before(runTime)
+			if event.IsAllDay {
+				builder.Say(fmt.Sprintf("All day event"))
+				builder.Pause("500")
+				builder.Say(fmt.Sprintf("%s", event.Title))
+			} else if !isPassed {
+				builder.Say(fmt.Sprintf("%s from %s to %s", event.Title, event.Start.Format("3:04PM"), event.End.Format("3:04PM")))
+			}
 
-			builder.Say(fmt.Sprintf("%s from %s to %s", event.Title, event.Start.Format("3:04PM"), event.End.Format("3:04PM")))
 			builder.Pause("1000")
 		}
 	}
