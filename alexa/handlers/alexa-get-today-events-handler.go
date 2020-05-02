@@ -17,6 +17,7 @@ func GetMyEventsForTodayIntentHandler(user *model.User) (alexa.Response, error) 
 	var builder ala.SSMLBuilder
 	service, _ := event.GetEventService(event.HasuraEventServiceType)
 	runTime := time.Now()
+	fmt.Println("Getting my events for time: " + time.Now().In(time.UTC).Format(time.RFC3339))
 	y, m, d := time.Now().In(time.UTC).Date()
 	start := time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 	end := start.AddDate(0, 0, 1).Add(-1 * time.Second)
