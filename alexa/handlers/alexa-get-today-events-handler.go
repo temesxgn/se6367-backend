@@ -12,8 +12,6 @@ import (
 	"time"
 )
 
-const TimeFormat = "3:04PM"
-
 // GetMyEventsForTodayIntent -
 func GetMyEventsForTodayIntentHandler(user *model.User) (alexa.Response, error) {
 	var builder ala.SSMLBuilder
@@ -45,7 +43,7 @@ func GetMyEventsForTodayIntentHandler(user *model.User) (alexa.Response, error) 
 			builder.Pause("500")
 			builder.Say(fmt.Sprintf("%s", e.Title))
 		} else if !isPassed {
-			builder.Say(fmt.Sprintf("%s from %s to %s", e.Title, e.Start.Format(TimeFormat), e.End.Format(TimeFormat)))
+			builder.Say(fmt.Sprintf("%s from %s to %s", e.Title, e.Start.Add(-time.Hour*5).Format(time.Kitchen), e.End.Add(-time.Hour*5).Format(time.Kitchen)))
 		}
 
 		builder.Pause("1000")
