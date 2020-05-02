@@ -40,6 +40,7 @@ func ParseString(text string) string {
 	//text = strings.Replace(text, " ac ", " after coupon ", -1)
 	//text = strings.Replace(text, "fs", "free shipping", -1)
 	//text = strings.Replace(text, "f/s", "free shipping", -1)
+	text = strings.Replace(text, "hw", "homework", -1)
 	text = strings.Replace(text, "-", "", -1)
 	text = strings.Replace(text, "™", "", -1)
 	text = strings.Replace(text, "  ", " ", -1)
